@@ -23,8 +23,8 @@ const mockDestinations: Destination[] = [
   },
   {
     id: 3,
-    title: "Tokio",
-    description: "Futuristički grad, anime, tehnologija, sushi.",
+    title: "Barselona",
+    description: "Sagrada Familia, prepoznatljiva arhitektura i odličan noćni život.",
   },
 ];
 

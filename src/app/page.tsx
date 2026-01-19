@@ -5,10 +5,14 @@ import CustomButton from "./components/CustomButton";
 import InputField from "./components/InputField";
 import Card from "./components/Card";
 
+type ChatMessage = {
+  id: number;
+  from: "user" | "bot";
+  text: string;
+};
+
 export default function HomePage() {
-  const [messages, setMessages] = useState<
-    { id: number; from: "user" | "bot"; text: string }[]
-  >([
+  const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 1,
       from: "bot",
@@ -23,15 +27,15 @@ export default function HomePage() {
 
     if (!currentQuestion.trim()) return;
 
-    const userMsg = {
+    const userMsg: ChatMessage = {
       id: Date.now(),
-      from: "user" as const,
+      from: "user",
       text: currentQuestion,
     };
 
-    const botMsg = {
+    const botMsg: ChatMessage = {
       id: Date.now() + 1,
-      from: "bot" as const,
+      from: "bot",
       text:
         "Ovo će kasnije pozivati backend /api/chat/ask. Ti si pitao: " +
         currentQuestion,
@@ -43,12 +47,16 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col">
+      {/* HEADER + NAV */}
       <header className="bg-white shadow-sm py-4">
         <div className="max-w-4xl mx-auto px-4 flex justify-between items-center">
           <h1 className="text-xl font-bold">Travel Chatbot</h1>
           <nav className="space-x-4 text-sm">
-            <a href="/" className="hover:underline">
+            <a href="/" className="font-semibold underline">
               Chat
+            </a>
+            <a href="/destinacija" className="hover:underline">
+              Destinacije
             </a>
             <a href="/admin" className="hover:underline">
               Admin
@@ -60,6 +68,7 @@ export default function HomePage() {
         </div>
       </header>
 
+      {/* CHAT */}
       <main className="flex-1 max-w-4xl mx-auto px-4 py-6 flex flex-col gap-4">
         <Card title="Chat sa chatbotom">
           <div className="h-64 overflow-y-auto border border-slate-200 rounded p-3 bg-slate-50 mb-4">

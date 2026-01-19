@@ -6,7 +6,7 @@ import Card from "../components/Card";
 
 export default function AdminPage() {
   const handleManageFaq = () => {
-    alert("Ovo će kasnije voditi na upravljanje FAQ (pitanja/odgovori).");
+    alert("Ovo će kasnije voditi na upravljanje FAQ.");
   };
 
   const handleManageDestinations = () => {
@@ -19,6 +19,7 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col">
+      {/* HEADER – ISTI MENI KAO NA HOME I LOGIN */}
       <header className="bg-white shadow-sm py-4">
         <div className="max-w-4xl mx-auto px-4 flex justify-between items-center">
           <h1 className="text-xl font-bold">Admin panel</h1>
@@ -26,8 +27,11 @@ export default function AdminPage() {
             <a href="/" className="hover:underline">
               Chat
             </a>
-            <a href="/destinations" className="hover:underline">
+            <a href="/destinacija" className="hover:underline">
               Destinacije
+            </a>
+            <a href="/admin" className="font-semibold underline">
+              Admin
             </a>
             <a href="/login" className="hover:underline">
               Login
