@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // NEMA VIŠE `url` OVDE!
+}
+
+model Role {
+  id    Int    @id @default(autoincrement())
+  name  String @unique   // GUEST | USER | ADMIN
+
+  users User[]
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String
+  name      String?
+  roleId    Int
+  role      Role      @relation(fields: [roleId], references: [id])
+
+  favorites     Favorite[]
+  chatHistories ChatHistory[]
+}
+
+model Destination {
+  id          Int         @id @default(autoincrement())
+  nameCity    String
+  country     String
+  description String?
+  slug        String?     @unique
+  rating      Int?
+
+
+  favorites Favorite[]
+
+  @@unique([nameCity, country]) //DODATO OGRANICENJE
+}
+
+
+model Favorite {
+  id            Int         @id @default(autoincrement())
+  userId        Int
+  destinationId Int
+
+  user        User        @relation(fields: [userId], references: [id])
+  destination Destination @relation(fields: [destinationId], references: [id])
+
+  @@unique([userId, destinationId])
+}
+
+model Question {
+  id        Int      @id @default(autoincrement())
+  text      String   @unique
+  keywords  String?
+  category  String?
+  createdAt DateTime @default(now())
+
+  answer    Answer?
+}
+
+model Answer {
+  id         Int      @id @default(autoincrement())
+  text       String
+  questionId Int      @unique
+
+  question Question @relation(fields: [questionId], references: [id])
+}
+
+model ChatHistory {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  question  String
+  answer    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
