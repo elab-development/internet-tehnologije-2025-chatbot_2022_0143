@@ -20,9 +20,9 @@ export default function InputField({
   hideLabel = false,
 }: InputFieldProps) {
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col gap-1">
       {!hideLabel && (
-        <label className="mb-1 text-sm font-medium text-gray-700">
+        <label className="text-xs font-semibold tracking-wide uppercase text-slate-500">
           {label}
         </label>
       )}
@@ -31,7 +31,7 @@ export default function InputField({
         placeholder={placeholder}
         value={value}
         onChange={onChange}
-        className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        className="rounded-xl border border-slate-200 bg-white/70 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 shadow-inner focus:outline-none focus:ring-2 focus:ring-violet-300 focus:border-violet-400"
       />
     </div>
   );

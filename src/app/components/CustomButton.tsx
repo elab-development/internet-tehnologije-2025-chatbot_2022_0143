@@ -6,7 +6,7 @@ type CustomButtonProps = {
   label: string;
   onClick?: () => void;
   type?: "button" | "submit";
-  variant?: "primary" | "secondary";
+  variant?: "primary" | "secondary" | "ghost";
 };
 
 export default function CustomButton({
@@ -15,20 +15,19 @@ export default function CustomButton({
   type = "button",
   variant = "primary",
 }: CustomButtonProps) {
-  const baseClasses =
-    "px-4 py-2 rounded-md text-sm font-medium transition-colors";
+  const base =
+    "inline-flex items-center justify-center font-medium text-sm rounded-xl px-4 py-2 transition-all duration-200 focus-visible:outline-none";
 
-  const variantClasses =
+  const style =
     variant === "secondary"
-      ? "bg-gray-200 text-gray-800 hover:bg-gray-300"
-      : "bg-blue-600 text-white hover:bg-blue-700";
+      ? "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-slate-300"
+      : variant === "ghost"
+      ? "bg-transparent text-slate-600 hover:bg-slate-100"
+      : // PRIMARY — TVOJA BOJA
+        "bg-[#FFE4B5] text-slate-800 hover:bg-[#E6CB9F] focus-visible:ring-2 focus-visible:ring-[#FFE4B5] shadow-md";
 
   return (
-    <button
-      type={type}
-      onClick={onClick}
-      className={`${baseClasses} ${variantClasses}`}
-    >
+    <button type={type} onClick={onClick} className={`${base} ${style}`}>
       {label}
     </button>
   );

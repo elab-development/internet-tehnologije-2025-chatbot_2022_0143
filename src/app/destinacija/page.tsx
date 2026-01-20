@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import CustomButton from "../components/CustomButton";
 import Card from "../components/Card";
+import CustomButton from "../components/CustomButton";
 
 type Destination = {
   id: number;
@@ -14,91 +13,85 @@ const mockDestinations: Destination[] = [
   {
     id: 1,
     title: "Pariz",
-    description: "Grad ljubavi, Ajfelov toranj i dobra hrana.",
+    description: "Grad ljubavi, Ajfelov toranj i fantastična francuska kuhinja.",
   },
   {
     id: 2,
     title: "Rim",
-    description: "Koloseum, istorija i najbolja pasta.",
+    description: "Koloseum, istorija na svakom koraku i najbolja pasta.",
   },
   {
     id: 3,
     title: "Barselona",
-    description: "Sagrada Familia, prepoznatljiva arhitektura i odličan noćni život.",
+    description:
+      "Mediteranski grad sa plažama, Gaudijevom arhitekturom i živim noćnim životom.",
   },
 ];
 
-export default function DestinationsPage() {
-  const [favorites, setFavorites] = useState<number[]>([]);
-
-  const handleToggleFavorite = (destination: Destination) => {
-    setFavorites((prev) =>
-      prev.includes(destination.id)
-        ? prev.filter((id) => id !== destination.id)
-        : [...prev, destination.id]
-    );
-
-    const isNowFavorite = !favorites.includes(destination.id);
-
-    if (isNowFavorite) {
-      alert(
-        `Ovo će kasnije pozivati backend da doda "${destination.title}" u omiljene destinacije.`
-      );
-    } else {
-      alert(
-        `Ovo će kasnije pozivati backend da ukloni "${destination.title}" iz omiljenih.`
-      );
-    }
-  };
-
+export default function DestinacijaPage() {
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="bg-white shadow-sm py-4">
-        <div className="max-w-4xl mx-auto px-4 flex justify-between items-center">
-          <h1 className="text-xl font-bold">Travel Chatbot</h1>
-          <nav className="space-x-4 text-sm">
-            <a href="/" className="hover:underline">
+    <div className="min-h-screen bg-gradient-to-br from-[#FFF7E8] via-[#FFEFD7] to-[#FFE4B5] flex flex-col">
+      {/* HEADER */}
+      <header className="bg-white/80 backdrop-blur-sm border-b border-slate-100 py-4">
+        <div className="max-w-5xl mx-auto px-4 flex justify-between items-center">
+          <h1 className="text-xl font-bold tracking-tight text-slate-900">
+            Travel Chatbot
+          </h1>
+          <nav className="space-x-2 text-sm">
+            <a
+              href="/"
+              className="inline-flex items-center px-3 py-1 rounded-full hover:bg-white/70 text-slate-700"
+            >
               Chat
             </a>
-            <a href="/destinations" className="font-semibold underline">
+            <a
+              href="/destinacija"
+              className="inline-flex items-center px-3 py-1 rounded-full bg-white shadow-sm text-slate-900 font-semibold"
+            >
               Destinacije
             </a>
-            <a href="/admin" className="hover:underline">
+            <a
+              href="/admin"
+              className="inline-flex items-center px-3 py-1 rounded-full hover:bg-white/70 text-slate-700"
+            >
               Admin
             </a>
-            <a href="/login" className="hover:underline">
+            <a
+              href="/login"
+              className="inline-flex items-center px-3 py-1 rounded-full hover:bg-white/70 text-slate-700"
+            >
               Login
             </a>
           </nav>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        <h2 className="text-2xl font-bold mb-4">Popularne destinacije</h2>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          {mockDestinations.map((dest) => {
-            const isFavorite = favorites.includes(dest.id);
-
-            return (
+      {/* SADRŽAJ */}
+      <main className="flex-1 max-w-5xl mx-auto px-4 py-6 flex flex-col gap-4">
+        <Card title="Popularne destinacije">
+          <div className="grid gap-4 md:grid-cols-2">
+            {mockDestinations.map((dest) => (
               <Card key={dest.id} title={dest.title}>
-                <p className="text-sm text-gray-700 mb-3">
-                  {dest.description}
-                </p>
+                <p className="mb-3">{dest.description}</p>
                 <CustomButton
-                  label={
-                    isFavorite
-                      ? "Ukloni iz omiljenih"
-                      : "Dodaj u omiljene"
+                  label="Dodaj u omiljene"
+                  onClick={() =>
+                    alert(`Ovde će kasnije ići dodavanje u omiljene: ${dest.title}`)
                   }
-                  variant={isFavorite ? "secondary" : "primary"}
-                  onClick={() => handleToggleFavorite(dest)}
                 />
               </Card>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        </Card>
       </main>
+
+      {/* FOOTER */}
+      <footer className="border-t border-slate-200 bg-white/80">
+        <div className="max-w-5xl mx-auto px-4 py-3 text-xs text-slate-500 flex justify-between">
+          <span>© 2025 Travel Chatbot</span>
+          
+        </div>
+      </footer>
     </div>
   );
 }
