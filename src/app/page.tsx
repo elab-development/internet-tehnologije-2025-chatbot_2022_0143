@@ -57,17 +57,39 @@ export default function HomePage() {
   ]);
   const [currentQuestion, setCurrentQuestion] = useState("");
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // null = još proveravamo, true/false = znamo stanje
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
   const [faqs, setFaqs] = useState<FaqItem[]>([]);
   const [expandedFaqId, setExpandedFaqId] = useState<number | null>(null);
 
+  // proveravamo da li je korisnik ulogovan preko /api/auth/me
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const stored = window.localStorage.getItem("loggedIn");
-    setIsLoggedIn(stored === "1");
+    async function checkAuth() {
+      try {
+        const res = await fetch("/api/auth/me", {
+          credentials: "include",
+          cache: "no-store",
+        });
+
+        if (!res.ok) {
+          setIsLoggedIn(false);
+          return;
+        }
+
+        const data = await res.json().catch(() => null);
+        const roleName = data?.user?.roleName ?? data?.roleName;
+
+        setIsLoggedIn(!!roleName);
+      } catch {
+        setIsLoggedIn(false);
+      }
+    }
+
+    checkAuth();
   }, []);
 
+  // simulacija učitavanja FAQ-a
   useEffect(() => {
     const timer = setTimeout(() => {
       setFaqs(mockFaqs);
@@ -110,60 +132,50 @@ export default function HomePage() {
     setExpandedFaqId((prev) => (prev === id ? null : id));
   };
 
+  // logout dugme u info boksu
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (e) {
+      // i ako pukne, ponašaj se kao da je odjavio
+    }
+
+    alert("Uspešno ste se odjavili.");
+
+    setIsLoggedIn(false);
+    router.push("/");
+    router.refresh();
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#FFF7E8] via-[#FFEFD7] to-[#FFE4B5] flex flex-col">
-      {/* HEADER + NAV */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-slate-100 py-4">
-        <div className="max-w-5xl mx-auto px-4 flex justify-between items-center">
-          <h1 className="text-xl font-bold tracking-tight text-slate-900">
-            Travel Chatbot
-          </h1>
-          <nav className="space-x-2 text-sm">
-            <a
-              href="/"
-              className="inline-flex items-center px-3 py-1 rounded-full bg-white shadow-sm text-slate-900 font-semibold"
-            >
-              Chat
-            </a>
-            <a
-              href="/destinacija"
-              className="inline-flex items-center px-3 py-1 rounded-full hover:bg-white/70 text-slate-700"
-            >
-              Destinacije
-            </a>
-            <a
-              href="/admin"
-              className="inline-flex items-center px-3 py-1 rounded-full hover:bg-white/70 text-slate-700"
-            >
-              Admin
-            </a>
-            <a
-              href="/login"
-              className="inline-flex items-center px-3 py-1 rounded-full hover:bg-white/70 text-slate-700"
-            >
-              Login
-            </a>
-          </nav>
-        </div>
-      </header>
-
-      <main className="flex-1 max-w-5xl mx-auto px-4 py-6 flex flex-col gap-4">
+      <main className="max-w-5xl mx-auto px-4 py-6 flex flex-col gap-4">
         {/* INFO BANNER */}
         <section>
-          {isLoggedIn ? (
-            <p className="text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2">
-              Prijavljeni ste – u sledećoj fazi ćete moći da uređujete destinacije i FAQ.
+          {isLoggedIn === null ? (
+            // dok proveravamo stanje
+            <p className="text-sm text-slate-500 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+              Provera statusa prijave...
             </p>
-          ) : (
-            <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center justify-between text-sm bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
-              <p>
-                Trenutno ste gost. Ulogujte se da biste kasnije menjali destinacije i pitanja.
-              </p>
+          ) : isLoggedIn ? (
+            // PRIJAVLJEN – zeleni + dugme ODJAVI SE
+            <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center justify-between text-sm bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2">
+              <p>Prijavljeni ste. </p>
               <CustomButton
-                label="Idi na login"
+                label="Odjavi se"
                 variant="secondary"
-                onClick={() => router.push("/login")}
+                onClick={handleLogout}
               />
+            </div>
+          ) : (
+            // GOST – samo tekst, bez dugmeta
+            <div className="text-sm bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+              <p>
+                Trenutno ste gost. 
+              </p>
             </div>
           )}
         </section>
@@ -258,7 +270,6 @@ export default function HomePage() {
       <footer className="border-t border-slate-200 bg-white/80">
         <div className="max-w-5xl mx-auto px-4 py-3 text-xs text-slate-500 flex justify-between">
           <span>© 2025 Travel Chatbot</span>
-          
         </div>
       </footer>
     </div>

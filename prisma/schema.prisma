@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  // NEMA VIŠE `url` OVDE!
 }
 
 model Role {
