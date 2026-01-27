@@ -42,15 +42,16 @@ export default function AdminPage() {
   }
 
   const handleManageFaq = () => {
-    alert("FAQ upravljanje (nije još implementirano)");
+    router.push("/admin/faq");
   };
+
 
   const handleManageDestinations = () => {
     router.push("/admin/destinacije");
   };
 
   const handleUsers = () => {
-    alert("Pregled korisnika (nije još implementirano)");
+    router.push("/admin/korisnici")
   };
 
   
@@ -66,7 +67,7 @@ export default function AdminPage() {
           </h2>
 
           <div className="flex flex-col gap-3">
-            <CustomButton label="Upravljanje FAQ" onClick={handleManageFaq} />
+            <CustomButton label="Upravljanje Q&A" onClick={handleManageFaq} />
             <CustomButton
               label="Upravljanje destinacijama"
               onClick={handleManageDestinations}

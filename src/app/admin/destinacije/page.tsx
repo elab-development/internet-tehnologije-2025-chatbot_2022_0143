@@ -16,11 +16,14 @@ export default function AdminDestinationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // forma za dodavanje
+  // forma (koristimo i za CREATE i za UPDATE)
   const [nameCity, setNameCity] = useState("");
   const [country, setCountry] = useState("");
   const [description, setDescription] = useState("");
   const [rating, setRating] = useState<string>("");
+
+  // 👇 ako je null → kreiramo novu; ako ima vrednost → menjamo postojeću
+  const [editingId, setEditingId] = useState<number | null>(null);
 
   useEffect(() => {
     async function loadDestinations() {
@@ -40,6 +43,7 @@ export default function AdminDestinationsPage() {
     loadDestinations();
   }, []);
 
+  // 🗑️ brisanje
   async function handleDelete(id: number) {
     const potvrda = window.confirm(
       "Da li ste sigurni da želite da obrišete destinaciju?"
@@ -52,15 +56,15 @@ export default function AdminDestinationsPage() {
       });
       const data = await res.json().catch(() => ({}));
 
-        if (!res.ok) {
+      if (!res.ok) {
         const msg =
-            data?.message || // iz backend-a
-            data?.error ||
-            data?.details ||
-            `Brisanje nije uspelo. Status: ${res.status}`;
+          data?.message ||
+          data?.error ||
+          data?.details ||
+          `Brisanje nije uspelo. Status: ${res.status}`;
         alert(msg);
         return;
-        }
+      }
 
       setDestinations((prev) => prev.filter((d) => d.id !== id));
     } catch (err) {
@@ -69,59 +73,100 @@ export default function AdminDestinationsPage() {
     }
   }
 
-  async function handleCreate() {
-  if (!nameCity || !country) {
-    alert("Naziv grada i država su obavezni.");
-    return;
+  // ✏️ klik na "Izmeni" – popunjavamo formu postojećim podacima
+  function handleStartEdit(dest: Destination) {
+    setEditingId(dest.id);
+    setNameCity(dest.nameCity);
+    setCountry(dest.country);
+    setDescription(dest.description ?? "");
+    setRating(
+      typeof dest.rating === "number" ? String(dest.rating) : ""
+    );
   }
 
-  try {
-    const res = await fetch("/api/destinations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        nameCity,
-        country,
-        description: description || null,
-        slug: null, // ili možeš napraviti slug iz naziva, ali za faks nije obavezno
-        rating: rating ? Number(rating) : null,
-      }),
-    });
-
-    const data = await res.json().catch(() => ({}));
-
-    if (!res.ok) {
-      const msg =
-        data?.message ||
-        `Kreiranje nije uspelo. Status: ${res.status}`;
-      alert(msg);
-      return;
-    }
-
-    // POST vraća direktno destinaciju, ne { destination: ... }
-    setDestinations((prev) => [...prev, data as Destination]);
-
-    // očisti formu
+  // 🧹 reset forme i izlazak iz edit moda
+  function resetForm() {
+    setEditingId(null);
     setNameCity("");
     setCountry("");
     setDescription("");
     setRating("");
-  } catch (err) {
-    console.error(err);
-    alert("Došlo je do greške pri komunikaciji sa serverom.");
   }
-}
 
+  // 💾 kreiranje NOVE ili UPDATE postojeće destinacije
+  async function handleSave() {
+    if (!nameCity || !country) {
+      alert("Naziv grada i država su obavezni.");
+      return;
+    }
+
+    const payload = {
+      nameCity,
+      country,
+      description: description || null,
+      slug: null,
+      rating: rating ? Number(rating) : null,
+    };
+
+    try {
+      let res: Response;
+      if (editingId === null) {
+        // ➕ CREATE
+        res = await fetch("/api/destinations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      } else {
+        // 🔁 UPDATE
+        res = await fetch(`/api/destinations/${editingId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      }
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        const msg =
+          data?.message ||
+          `Čuvanje destinacije nije uspelo. Status: ${res.status}`;
+        alert(msg);
+        return;
+      }
+
+      const updated = data as Destination;
+
+      if (editingId === null) {
+        // dodajemo na listu
+        setDestinations((prev) => [...prev, updated]);
+      } else {
+        // menjamo u listi
+        setDestinations((prev) =>
+          prev.map((d) => (d.id === editingId ? updated : d))
+        );
+      }
+
+      resetForm();
+    } catch (err) {
+      console.error(err);
+      alert("Došlo je do greške pri komunikaciji sa serverom.");
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#FFF7E8] via-[#FFEFD7] to-[#FFE4B5] flex flex-col">
-      
-
       <main className="flex-1 max-w-5xl mx-auto px-4 py-8 space-y-8">
+        {/* ───────── FORM ───────── */}
         <section className="bg-white/90 rounded-2xl shadow-md border border-slate-100 p-6 space-y-4">
           <h2 className="text-lg font-semibold text-slate-900">
-            Dodavanje nove destinacije
+            {editingId === null
+              ? "Dodavanje nove destinacije"
+              : "Izmena destinacije"}
           </h2>
+
+          
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1">
@@ -167,11 +212,26 @@ export default function AdminDestinationsPage() {
             </div>
           </div>
 
-          <div className="pt-2">
-            <CustomButton label="Sačuvaj destinaciju" onClick={handleCreate} />
+          <div className="pt-2 flex gap-2">
+            <CustomButton
+              label={
+                editingId === null
+                  ? "Sačuvaj destinaciju"
+                  : "Sačuvaj izmene"
+              }
+              onClick={handleSave}
+            />
+            {editingId !== null && (
+              <CustomButton
+                label="Otkaži"
+                variant="secondary"
+                onClick={resetForm}
+              />
+            )}
           </div>
         </section>
 
+        {/* ───────── LISTA ───────── */}
         <section className="bg-white/90 rounded-2xl shadow-md border border-slate-100 p-6 space-y-4">
           <h2 className="text-lg font-semibold text-slate-900">
             Postojeće destinacije
@@ -208,11 +268,18 @@ export default function AdminDestinationsPage() {
                     )}
                   </div>
 
-                  <CustomButton
-                    label="Obriši"
-                    variant="secondary"
-                    onClick={() => handleDelete(d.id)}
-                  />
+                  <div className="flex gap-2">
+                    <CustomButton
+                      label="Izmeni"
+                      variant="secondary"
+                      onClick={() => handleStartEdit(d)}
+                    />
+                    <CustomButton
+                      label="Obriši"
+                      variant="secondary"
+                      onClick={() => handleDelete(d.id)}
+                    />
+                  </div>
                 </div>
               ))}
             </div>

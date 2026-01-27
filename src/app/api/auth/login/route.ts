@@ -1,6 +1,11 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+// @ts-ignore
+import bcrypt from "bcrypt";
+import { prisma } from "@/lib/prisma";
+
+export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
@@ -16,19 +21,29 @@ export async function POST(req: Request) {
       );
     }
 
-    // NAĐI USERA PO EMAILU
+        // 1) Nađi user-a
     const user = await prisma.user.findUnique({
-      where: { email },
-      include: { role: true },
+    where: { email },
+    include: { role: true }, // ako ti treba roleName, kao ranije
     });
 
-    // ako nema usera ili lozinka ne odgovara → 401
-    if (!user || user.password !== password) {
-      return NextResponse.json(
+    if (!user) {
+    return NextResponse.json(
         { message: "Neuspešno logovanje. Proverite kredencijale." },
         { status: 401 }
-      );
+    );
     }
+
+    // 2) Provera hashovane lozinke
+    const isValidPassword = await bcrypt.compare(password, user.password);
+
+    if (!isValidPassword) {
+    return NextResponse.json(
+        { message: "Neuspešno logovanje. Proverite kredencijale." },
+        { status: 401 }
+    );
+    }
+
 
     const roleName = user.role?.name ?? "USER";
 
