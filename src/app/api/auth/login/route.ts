@@ -1,4 +1,3 @@
-
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 // @ts-ignore
@@ -11,8 +10,11 @@ export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => null);
 
-    const email = body?.email as string | undefined;
-    const password = body?.password as string | undefined;
+    const emailRaw = (body?.email ?? "") as string;
+    const passwordRaw = (body?.password ?? "") as string;
+
+    const email = emailRaw.trim().toLowerCase();
+    const password = String(passwordRaw);
 
     if (!email || !password) {
       return NextResponse.json(
@@ -21,63 +23,46 @@ export async function POST(req: Request) {
       );
     }
 
-        // 1) Nađi user-a
     const user = await prisma.user.findUnique({
-    where: { email },
-    include: { role: true }, // ako ti treba roleName, kao ranije
+      where: { email },
+      include: { role: true },
     });
 
+    // namerno ista poruka da ne otkrivamo da li email postoji
     if (!user) {
-    return NextResponse.json(
+      return NextResponse.json(
         { message: "Neuspešno logovanje. Proverite kredencijale." },
         { status: 401 }
-    );
+      );
     }
 
-    // 2) Provera hashovane lozinke
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    // bcrypt compare
+    const ok = await bcrypt.compare(password, user.password);
 
-    if (!isValidPassword) {
-    return NextResponse.json(
+    if (!ok) {
+      return NextResponse.json(
         { message: "Neuspešno logovanje. Proverite kredencijale." },
         { status: 401 }
-    );
+      );
     }
 
+    const roleName = user.role?.name ?? "REGISTROVANI_KORISNIK";
 
-    const roleName = user.role?.name ?? "USER";
-
-    // upišemo cookie-e
-    const cookieStore = await cookies();
-    cookieStore.set("userId", String(user.id), {
-      httpOnly: true,
-      path: "/",
-    });
-    cookieStore.set("role", roleName, {
-      httpOnly: true,
-      path: "/",
-    });
+    const cookieStore = await cookies(); // kod tebe mora await
+    cookieStore.set("userId", String(user.id), { httpOnly: true, path: "/" });
+    cookieStore.set("role", roleName, { httpOnly: true, path: "/" });
 
     return NextResponse.json(
       {
-        user: {
-          id: user.id,
-          email: user.email,
-          roleName,
-        },
+        user: { id: user.id, email: user.email, roleName },
         roleName,
       },
-      {
-        status: 200,
-        headers: {
-          "Cache-Control": "no-store",
-        },
-      }
+      { status: 200, headers: { "Cache-Control": "no-store" } }
     );
-  } catch (error) {
-    console.error("Greška u /api/auth/login:", error);
+  } catch (err: any) {
+    console.error("Greška u /api/auth/login:", err);
     return NextResponse.json(
-      { message: "Serverska greška pri logovanju." },
+      { message: "Serverska greška pri logovanju.", details: err?.message },
       { status: 500 }
     );
   }

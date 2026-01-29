@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   db:
@@ -22,9 +22,10 @@ services:
       - .:/app
       - /app/node_modules
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/travel_chatbot?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/travel_chatbot?schema=public
     depends_on:
       - db
+    command: sh -c "npx prisma generate && npm run dev"
 
 volumes:
   db_data:
