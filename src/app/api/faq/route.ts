@@ -11,23 +11,44 @@ type FaqPayload = {
   category?: string | null;
 };
 
-// VRATI SVA PITANJA I ODGOVORE
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+    const limitParam = searchParams.get("limit");
+
+    // ako nije prosleđen limit -> ADMIN LISTA (sve + admin shape)
+    const isAdminListMode = !limitParam;
+
+    const limit = limitParam
+      ? Math.min(Math.max(Number(limitParam) || 5, 1), 50) // 1..50
+      : undefined;
+
     const questions = await prisma.question.findMany({
-      orderBy: { createdAt: "asc" },
+      where: { answer: { isNot: null } },
+      orderBy: { createdAt: "desc" },
+      take: limit,
       include: { answer: true },
     });
 
-    const faqs = questions.map((q) => ({
+    if (isAdminListMode) {
+      const adminFaqs = questions.map((q) => ({
+        id: q.id,
+        questionText: q.text,
+        answerText: q.answer?.text ?? "",
+        keywords: q.keywords ?? null,
+        category: q.category ?? null,
+      }));
+      return NextResponse.json(adminFaqs, { status: 200 });
+    }
+
+    // public/home FAQ blok
+    const publicFaqs = questions.map((q) => ({
       id: q.id,
-      questionText: q.text,
-      answerText: q.answer?.text ?? "",
-      keywords: q.keywords ?? null,
-      category: q.category ?? null,
+      question: q.text,
+      answer: q.answer?.text ?? "",
     }));
 
-    return NextResponse.json(faqs, { status: 200 });
+    return NextResponse.json(publicFaqs, { status: 200 });
   } catch (error) {
     console.error("Greška pri učitavanju FAQ:", error);
     return NextResponse.json(
@@ -36,6 +57,8 @@ export async function GET() {
     );
   }
 }
+
+
 
 // KREIRAJ NOVO PITANJE + ODGOVOR
 export async function POST(req: NextRequest) {

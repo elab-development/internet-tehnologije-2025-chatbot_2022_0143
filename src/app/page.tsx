@@ -18,27 +18,6 @@ type FaqItem = {
   answer: string;
 };
 
-const mockFaqs: FaqItem[] = [
-  {
-    id: 1,
-    question: "Da li chatbot može da mi predloži destinaciju za leto?",
-    answer:
-      "Da – postavi pitanje tipa: 'Predloži mi letovanje za studente sa malim budžetom' i dobićeš više predloga.",
-  },
-  {
-    id: 2,
-    question: "Da li mogu da sačuvam omiljene destinacije?",
-    answer:
-      "U sledećoj fazi projekta dodaćemo mogućnost čuvanja favorita za ulogovane korisnike.",
-  },
-  {
-    id: 3,
-    question: "Kome je namenjen ovaj sajt?",
-    answer:
-      "Sajt je namenjen studentima koji žele brze savete za putovanja preko chatbota.",
-  },
-];
-
 const popularQuestions = [
   "Koje destinacije preporučuješ za letovanje sa malim budžetom?",
   "Šta da ponesem na put u planine zimi?",
@@ -89,12 +68,23 @@ export default function HomePage() {
     checkAuth();
   }, []);
 
-  // simulacija učitavanja FAQ-a
+  // učitavanje FAQ-a iz baze
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setFaqs(mockFaqs);
-    }, 500);
-    return () => clearTimeout(timer);
+    async function loadFaqs() {
+      try {
+        const res = await fetch("/api/faq?limit=5", { cache: "no-store" });
+        if (!res.ok) {
+          setFaqs([]);
+          return;
+        }
+        const data = await res.json();
+        setFaqs(Array.isArray(data) ? data : []);
+      } catch {
+        setFaqs([]);
+      }
+    }
+
+    loadFaqs();
   }, []);
 
   const sendQuestion = (text: string) => {
@@ -156,14 +146,12 @@ export default function HomePage() {
         {/* INFO BANNER */}
         <section>
           {isLoggedIn === null ? (
-            // dok proveravamo stanje
             <p className="text-sm text-slate-500 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
               Provera statusa prijave...
             </p>
           ) : isLoggedIn ? (
-            // PRIJAVLJEN – zeleni + dugme ODJAVI SE
             <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center justify-between text-sm bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2">
-              <p>Prijavljeni ste. </p>
+              <p>Prijavljeni ste.</p>
               <CustomButton
                 label="Odjavi se"
                 variant="secondary"
@@ -171,11 +159,8 @@ export default function HomePage() {
               />
             </div>
           ) : (
-            // GOST – samo tekst, bez dugmeta
             <div className="text-sm bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
-              <p>
-                Trenutno ste gost. 
-              </p>
+              <p>Trenutno ste gost.</p>
             </div>
           )}
         </section>
