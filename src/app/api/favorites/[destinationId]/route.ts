@@ -1,14 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthFromRequest } from "@/lib/auth";
 
-function isAllowed(role: string | null) {
-  return role === "REGISTROVANI_KORISNIK" || role === "ADMIN";
-}
-
 export async function DELETE(
-  _req: Request,
-  context: { params: { destinationId: string } }
+  _req: NextRequest,
+  { params }: { params: Promise<{ destinationId: string }> }
 ) {
   const { userId, role } = await getAuthFromRequest();
 
@@ -16,21 +12,19 @@ export async function DELETE(
     return NextResponse.json({ message: "Niste ulogovani." }, { status: 401 });
   }
 
-  if (!isAllowed(role)) {
+  if (role !== "REGISTROVANI_KORISNIK") {
     return NextResponse.json(
-      { message: "Samo ulogovani korisnici mogu uklanjati omiljene." },
+      { message: "Samo registrovani korisnici mogu uklanjati omiljene." },
       { status: 403 }
     );
   }
 
-  const destIdNum = Number(context.params.destinationId);
+  const { destinationId } = await params;
+  const destIdNum = Number(destinationId);
   const idNum = Number(userId);
 
   if (Number.isNaN(destIdNum)) {
     return NextResponse.json({ message: "Neispravan destinationId." }, { status: 400 });
-  }
-  if (Number.isNaN(idNum)) {
-    return NextResponse.json({ message: "Neispravan userId." }, { status: 400 });
   }
 
   const fav = await prisma.favorite.findFirst({
