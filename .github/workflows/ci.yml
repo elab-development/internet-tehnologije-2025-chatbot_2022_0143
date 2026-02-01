@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "develop", "feature/**"]
+  pull_request:
+    branches: ["main", "develop"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and start services
+        run: |
+          docker compose up -d --build
+
+      - name: Run DB migrations
+        run: |
+          docker compose exec -T app npx prisma migrate deploy
+
+
+      - name: Wait for app to be ready
+        run: |
+          for i in {1..60}; do
+            if curl -sSf http://localhost:3000 >/dev/null; then
+              echo "App is up!"
+              exit 0
+            fi
+            echo "Waiting for app..."
+            sleep 2
+          done
+          echo "App did not start in time"
+          docker compose logs
+          exit 1
+
+      - name: Run tests inside app container
+        run: |
+          docker compose exec -T app npm test
+
+      - name: Show logs on failure
+        if: failure()
+        run: |
+          docker compose logs
