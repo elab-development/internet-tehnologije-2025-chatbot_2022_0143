@@ -144,7 +144,7 @@ export default function DestinacijaPage() {
             </a>
 
             {/* samo REGISTROVANI_KORISNIK vidi i omiljene, sa separatorom | */}
-            {role !== null && role !== "GOST"&& (
+            {role === "REGISTROVANI_KORISNIK"&& (
               <>
                 <span className="text-slate-400">|</span>
                 <a href="/omiljene" className="underline text-slate-700 hover:text-slate-900">

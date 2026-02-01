@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthFromRequest } from "@/lib/auth";
 
+function isAllowed(role: string | null) {
+  return role === "REGISTROVANI_KORISNIK" || role === "ADMIN";
+}
+
 export async function GET() {
   const { userId, role } = await getAuthFromRequest();
 
@@ -9,22 +13,25 @@ export async function GET() {
     return NextResponse.json({ message: "Niste ulogovani." }, { status: 401 });
   }
 
-  if (role !== "REGISTROVANI_KORISNIK") {
+  if (!isAllowed(role)) {
     return NextResponse.json(
-      { message: "Samo registrovani korisnici mogu imati omiljene." },
+      { message: "Samo ulogovani korisnici mogu imati omiljene." },
       { status: 403 }
     );
   }
 
   const idNum = Number(userId);
+  if (Number.isNaN(idNum)) {
+    return NextResponse.json({ message: "Neispravan userId." }, { status: 400 });
+  }
+
   const favorites = await prisma.favorite.findMany({
     where: { userId: idNum },
     include: { destination: true },
     orderBy: { id: "desc" },
   });
 
-  
-  return NextResponse.json(favorites.map(f => f.destination), {
+  return NextResponse.json(favorites.map((f) => f.destination), {
     status: 200,
     headers: { "Cache-Control": "no-store" },
   });
@@ -37,9 +44,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: "Niste ulogovani." }, { status: 401 });
   }
 
-  if (role !== "REGISTROVANI_KORISNIK") {
+  if (!isAllowed(role)) {
     return NextResponse.json(
-      { message: "Samo registrovani korisnici mogu dodavati omiljene." },
+      { message: "Samo ulogovani korisnici mogu dodavati omiljene." },
       { status: 403 }
     );
   }
@@ -52,8 +59,10 @@ export async function POST(req: Request) {
   }
 
   const idNum = Number(userId);
+  if (Number.isNaN(idNum)) {
+    return NextResponse.json({ message: "Neispravan userId." }, { status: 400 });
+  }
 
-  
   const existing = await prisma.favorite.findFirst({
     where: { userId: idNum, destinationId },
   });
@@ -65,5 +74,8 @@ export async function POST(req: Request) {
     data: { userId: idNum, destinationId },
   });
 
-  return NextResponse.json(created, { status: 201, headers: { "Cache-Control": "no-store" } });
+  return NextResponse.json(created, {
+    status: 201,
+    headers: { "Cache-Control": "no-store" },
+  });
 }
