@@ -17,7 +17,7 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // polja za novog admina
+  
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -25,7 +25,7 @@ export default function AdminUsersPage() {
 
   const router = useRouter();
 
-  // ------------------- učitavanje korisnika -------------------
+  
   useEffect(() => {
     async function loadUsers() {
       try {
@@ -57,7 +57,7 @@ export default function AdminUsersPage() {
     void loadUsers();
   }, [router]);
 
-  // ------------------- slanje forme za novog admina -------------------
+  
   async function handleCreateAdmin(e: FormEvent) {
     e.preventDefault();
     if (creating) return;
@@ -106,10 +106,10 @@ export default function AdminUsersPage() {
 
       const created: UserDto = data.user;
 
-      // dodaj novog admina u tabelu
+      
       setUsers((prev) => [...prev, created]);
 
-      // očisti formu
+      
       setNewName("");
       setNewEmail("");
       setNewPassword("");
@@ -122,7 +122,7 @@ export default function AdminUsersPage() {
     }
   }
 
-  // ------------------- UI -------------------
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#FFF7E8] via-[#FFEFD7] to-[#FFE4B5] flex flex-col">
       <main className="flex-1 flex items-center justify-center px-4">

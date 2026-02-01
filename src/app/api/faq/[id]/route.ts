@@ -1,4 +1,4 @@
-// src/app/api/faq/[id]/route.ts
+
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
@@ -11,7 +11,7 @@ type FaqPayload = {
   category?: string | null;
 };
 
-// IZMENI POSTOJEĆE PITANJE + ODGOVOR
+
 export async function PUT(
   req: Request,
   context: { params: Promise<{ id: string }> }
@@ -86,7 +86,7 @@ export async function PUT(
   }
 }
 
-// OBRIŠI PITANJE + ODGOVOR
+
 export async function DELETE(
   req: Request,
   context: { params: Promise<{ id: string }> }
@@ -111,7 +111,7 @@ export async function DELETE(
       );
     }
 
-    // prvo obriši odgovor, zatim pitanje
+    
     await prisma.answer.deleteMany({
       where: { questionId: idNum },
     });

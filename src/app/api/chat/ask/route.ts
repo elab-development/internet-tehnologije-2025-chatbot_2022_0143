@@ -1,4 +1,3 @@
-// src/app/api/chat/ask/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthFromRequest } from "@/lib/auth";
@@ -110,7 +109,7 @@ export async function POST(req: NextRequest) {
       .slice(0, 3)
       .map(({ id, questionText }) => ({ id, questionText }));
 
-    // SNIMANJE ISTORIJE: ADMIN i REGISTROVANI_KORISNIK
+    
     const { userId, role } = await getAuthFromRequest();
     if ((role === "ADMIN" || role === "REGISTROVANI_KORISNIK") && userId) {
       const idNum = Number(userId);

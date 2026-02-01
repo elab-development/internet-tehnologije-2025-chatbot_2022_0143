@@ -9,21 +9,21 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export default function LoginPage() {
   const router = useRouter();
 
-  // koji mod je aktivan: prijava ili registracija
+  
   const [mode, setMode] = useState<"login" | "register">("login");
 
-  // polja za login
+  
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
 
-  // polja za registraciju
+  
   const [regName, setRegName] = useState("");
   const [regEmail, setRegEmail] = useState("");
   const [regPassword, setRegPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
 
-  // =================== LOGIN ===================
+  
   async function handleLogin() {
     if (!loginEmail || !loginPassword) {
       alert("Unesite email i lozinku.");
@@ -52,7 +52,7 @@ export default function LoginPage() {
         return;
       }
 
-      // roleName dobijamo iz /api/auth/login
+      
       const roleName = data?.roleName ?? data?.user?.roleName;
 
       if (roleName === "ADMIN") {
@@ -61,7 +61,7 @@ export default function LoginPage() {
         router.push("/");
       }
 
-      router.refresh(); // osveži auth state u app-u
+      router.refresh(); 
     } catch (err) {
       console.error(err);
       alert("Došlo je do greške pri logovanju.");
@@ -77,7 +77,7 @@ export default function LoginPage() {
     }
   }
 
-  // =================== REGISTRACIJA ===================
+  
   async function handleRegisterSubmit(e: FormEvent) {
     e.preventDefault();
     if (!regEmail || !regPassword) {
@@ -116,9 +116,9 @@ export default function LoginPage() {
 
       alert("Registracija uspešna! Sada se prijavite.");
 
-      // posle registracije prebacujemo korisnika na login
+      
       setMode("login");
-      setLoginEmail(regEmail); // da mu popunimo email
+      setLoginEmail(regEmail); 
       setRegName("");
       setRegEmail("");
       setRegPassword("");
@@ -130,7 +130,7 @@ export default function LoginPage() {
     }
   }
 
-  // =================== RENDER ===================
+  
 
   const isLogin = mode === "login";
 

@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 type User = {
   id?: number;
   email?: string;
-  roleName?: string; // "ADMIN" | "USER" | "GUEST" | undefined
+  roleName?: string; 
 };
 
 export default function MainHeader() {
@@ -17,7 +17,7 @@ export default function MainHeader() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // svaki put kad promeniš stranicu, proveri ponovo /api/auth/me
+ 
   useEffect(() => {
     async function fetchMe() {
       try {
@@ -50,7 +50,7 @@ export default function MainHeader() {
 
     if (!isAdmin) {
       alert("Niste administrator.");
-      // ostaješ na stranici na kojoj jesi
+      
       return;
     }
 
@@ -62,7 +62,7 @@ export default function MainHeader() {
 
     if (user) {
       alert("Već ste prijavljeni.");
-      // ne ide na /login
+    
       return;
     }
 

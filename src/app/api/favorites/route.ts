@@ -23,7 +23,7 @@ export async function GET() {
     orderBy: { id: "desc" },
   });
 
-  // vraćamo destinacije (jer frontend to očekuje)
+  
   return NextResponse.json(favorites.map(f => f.destination), {
     status: 200,
     headers: { "Cache-Control": "no-store" },
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
 
   const idNum = Number(userId);
 
-  // opciono: spreči duplikate
+  
   const existing = await prisma.favorite.findFirst({
     where: { userId: idNum, destinationId },
   });

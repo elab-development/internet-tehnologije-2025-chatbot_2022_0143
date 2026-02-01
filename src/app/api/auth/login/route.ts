@@ -28,7 +28,7 @@ export async function POST(req: Request) {
       include: { role: true },
     });
 
-    // namerno ista poruka da ne otkrivamo da li email postoji
+    
     if (!user) {
       return NextResponse.json(
         { message: "Neuspešno logovanje. Proverite kredencijale." },
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // bcrypt compare
+    
     const ok = await bcrypt.compare(password, user.password);
 
     if (!ok) {
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
 
     const roleName = user.role?.name ?? "REGISTROVANI_KORISNIK";
 
-    const cookieStore = await cookies(); // kod tebe mora await
+    const cookieStore = await cookies(); 
     cookieStore.set("userId", String(user.id), { httpOnly: true, path: "/" });
     cookieStore.set("role", roleName, { httpOnly: true, path: "/" });
 

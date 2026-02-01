@@ -1,4 +1,4 @@
-// src/app/api/faq/route.ts
+
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
@@ -16,11 +16,11 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const limitParam = searchParams.get("limit");
 
-    // ako nije prosleđen limit -> ADMIN LISTA (sve + admin shape)
+    
     const isAdminListMode = !limitParam;
 
     const limit = limitParam
-      ? Math.min(Math.max(Number(limitParam) || 5, 1), 50) // 1..50
+      ? Math.min(Math.max(Number(limitParam) || 5, 1), 50) 
       : undefined;
 
     const questions = await prisma.question.findMany({
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(adminFaqs, { status: 200 });
     }
 
-    // public/home FAQ blok
+    
     const publicFaqs = questions.map((q) => ({
       id: q.id,
       question: q.text,
@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
 
 
 
-// KREIRAJ NOVO PITANJE + ODGOVOR
+
 export async function POST(req: NextRequest) {
   try {
     const { role } = await getAuthFromRequest();

@@ -6,8 +6,7 @@ import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-// ========================= GET /api/admin/users =========================
-// Vraća sve korisnike, dozvoljeno samo ADMIN-u
+
 export async function GET() {
   try {
     const cookieStore = await cookies();
@@ -42,8 +41,7 @@ export async function GET() {
   }
 }
 
-// ========================= POST /api/admin/users =========================
-// Kreira NOVOG ADMINA – može da pozove samo postojeći admin
+
 export async function POST(req: Request) {
   try {
     const cookieStore = await cookies();
@@ -77,7 +75,7 @@ export async function POST(req: Request) {
     );
     }
 
-    // 1) proveri da li već postoji korisnik sa tim emailom
+    
     const existing = await prisma.user.findUnique({
       where: { email },
     });
@@ -89,7 +87,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // 2) nađi ADMIN rolu
+    
     const adminRole = await prisma.role.findUnique({
       where: { name: "ADMIN" },
     });
@@ -101,10 +99,10 @@ export async function POST(req: Request) {
       );
     }
 
-    // 3) hash lozinke
+    
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 4) kreiraj user-a sa admin ulogom
+    
     const newAdmin = await prisma.user.create({
       data: {
         email,

@@ -1,4 +1,4 @@
-// src/app/admin/faq/page.tsx
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -17,7 +17,7 @@ export default function AdminFaqPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // forma
+  
   const [questionText, setQuestionText] = useState("");
   const [answerText, setAnswerText] = useState("");
   const [keywords, setKeywords] = useState("");
@@ -26,7 +26,7 @@ export default function AdminFaqPage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
 
-  // učitaj postojeća pitanja i odgovore
+  
   useEffect(() => {
     async function loadFaqs() {
       try {
@@ -93,7 +93,7 @@ export default function AdminFaqPage() {
 
       setFaqs((prev) => prev.filter((f) => f.id !== id));
 
-      // ako smo baš ovo pitanje editovali, očisti formu
+    
       if (editingId === id) {
         resetForm();
       }
@@ -120,7 +120,7 @@ export default function AdminFaqPage() {
       setSaving(true);
 
       if (editingId === null) {
-        // KREIRANJE
+        
         const res = await fetch("/api/faq", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -141,7 +141,7 @@ export default function AdminFaqPage() {
         setFaqs((prev) => [...prev, data as FaqItem]);
         resetForm();
       } else {
-        // IZMENA
+        
         const res = await fetch(`/api/faq/${editingId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },

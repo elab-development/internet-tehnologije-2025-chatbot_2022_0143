@@ -13,7 +13,7 @@ export function LoginForm() {
       body: JSON.stringify({ email, password }),
     })
 
-    // po želji refresh ili navigate
+    
     window.location.reload()
   }
 
@@ -27,7 +27,7 @@ export function LoginForm() {
       />
 
       <input
-        type="password"   // <<< OVDE JE BITNO - pravi tačkice!
+        type="password"   
         placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}

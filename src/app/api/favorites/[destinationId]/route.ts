@@ -27,7 +27,7 @@ export async function DELETE(
     return NextResponse.json({ message: "Neispravan destinationId." }, { status: 400 });
   }
 
-  // obriši “prvi koji nađe” (zavisi od šeme; ako ima unique(userId,destinationId) još bolje)
+  
   const fav = await prisma.favorite.findFirst({
     where: { userId: idNum, destinationId: destIdNum },
   });

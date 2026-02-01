@@ -46,7 +46,7 @@ export default function HomePage() {
 
   const [sending, setSending] = useState(false);
 
-  // auth
+  
   useEffect(() => {
     async function checkAuth() {
       try {
@@ -75,7 +75,7 @@ export default function HomePage() {
     checkAuth();
   }, []);
 
-  // FAQ (desni blok)
+  
   useEffect(() => {
     async function loadFaqs() {
       try {

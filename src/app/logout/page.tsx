@@ -12,7 +12,7 @@ export default function LogoutPage() {
         await fetch("/api/auth/logout", { method: "POST" });
       } finally {
         router.replace("/login");
-        router.refresh(); // Ovo je važno!
+        router.refresh(); 
       }
     })();
   }, [router]);

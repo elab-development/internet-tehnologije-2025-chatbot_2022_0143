@@ -10,7 +10,7 @@ type DestinationPayload = {
   rating?: number | null;
 };
 
-// 🔁 UPDATE destinacije
+
 export async function PUT(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
@@ -70,7 +70,7 @@ export async function PUT(
   }
 }
 
-// 🗑️ DELETE destinacije 
+
 export async function DELETE(
   req: Request,
   context: { params: Promise<{ id: string }> }

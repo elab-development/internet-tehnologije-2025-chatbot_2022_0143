@@ -1,4 +1,3 @@
-// src/app/api/chat/history/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthFromRequest } from "@/lib/auth";
@@ -21,7 +20,7 @@ export async function GET(req: NextRequest) {
     const limit = Math.min(Math.max(Number(limitParam) || 50, 1), 200);
 
     const rows = await prisma.chatHistory.findMany({
-      where: { userId: idNum },          // ✅ samo njegova istorija (i admin i registrovani)
+      where: { userId: idNum },          
       orderBy: { createdAt: "desc" },
       take: limit,
     });

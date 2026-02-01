@@ -16,13 +16,13 @@ export default function AdminDestinationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // forma (koristimo i za CREATE i za UPDATE)
+  
   const [nameCity, setNameCity] = useState("");
   const [country, setCountry] = useState("");
   const [description, setDescription] = useState("");
   const [rating, setRating] = useState<string>("");
 
-  // 👇 ako je null → kreiramo novu; ako ima vrednost → menjamo postojeću
+  
   const [editingId, setEditingId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -43,7 +43,7 @@ export default function AdminDestinationsPage() {
     loadDestinations();
   }, []);
 
-  // 🗑️ brisanje
+  
   async function handleDelete(id: number) {
     const potvrda = window.confirm(
       "Da li ste sigurni da želite da obrišete destinaciju?"
@@ -73,7 +73,7 @@ export default function AdminDestinationsPage() {
     }
   }
 
-  // ✏️ klik na "Izmeni" – popunjavamo formu postojećim podacima
+  
   function handleStartEdit(dest: Destination) {
     setEditingId(dest.id);
     setNameCity(dest.nameCity);
@@ -84,7 +84,7 @@ export default function AdminDestinationsPage() {
     );
   }
 
-  // 🧹 reset forme i izlazak iz edit moda
+  
   function resetForm() {
     setEditingId(null);
     setNameCity("");
@@ -93,7 +93,7 @@ export default function AdminDestinationsPage() {
     setRating("");
   }
 
-  // 💾 kreiranje NOVE ili UPDATE postojeće destinacije
+  
   async function handleSave() {
     if (!nameCity || !country) {
       alert("Naziv grada i država su obavezni.");
@@ -111,14 +111,14 @@ export default function AdminDestinationsPage() {
     try {
       let res: Response;
       if (editingId === null) {
-        // ➕ CREATE
+        
         res = await fetch("/api/destinations", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
       } else {
-        // 🔁 UPDATE
+        
         res = await fetch(`/api/destinations/${editingId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -139,10 +139,10 @@ export default function AdminDestinationsPage() {
       const updated = data as Destination;
 
       if (editingId === null) {
-        // dodajemo na listu
+        
         setDestinations((prev) => [...prev, updated]);
       } else {
-        // menjamo u listi
+        
         setDestinations((prev) =>
           prev.map((d) => (d.id === editingId ? updated : d))
         );

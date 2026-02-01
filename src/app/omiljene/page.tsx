@@ -66,7 +66,7 @@ export default function OmiljenePage() {
     }
   }
 
-  // samo USER treba da koristi ovu stranicu (admin/gost će dobiti poruku)
+  
   if (role === "ADMIN") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#FFF7E8] via-[#FFEFD7] to-[#FFE4B5] px-4 py-8">

@@ -15,7 +15,7 @@ export async function GET() {
       return NextResponse.json({ user: null, roleName: null }, { status: 200 });
     }
 
-    // Učitaj user-a (bez oslanjanja na naziv relacije "role")
+    
     const user = await prisma.user.findUnique({
       where: { id: idNum },
       select: {
@@ -29,7 +29,7 @@ export async function GET() {
       return NextResponse.json({ user: null, roleName: null }, { status: 200 });
     }
 
-    // Nađi naziv uloge preko roleId
+    
     const role = await prisma.role.findUnique({
       where: { id: user.roleId },
       select: { name: true },
