@@ -137,13 +137,24 @@ export default function DestinacijaPage() {
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-slate-900">Destinacije</h2>
 
-          {/* dugme za /omiljene vidi samo REGISTROVANI_KORISNIK */}
-          {role === "REGISTROVANI_KORISNIK" && (
-            <a href="/omiljene" className="text-sm underline text-slate-700 hover:text-slate-900">
-              Moje omiljene
+          <div className="flex items-center gap-2 text-sm">
+            {/* svi vide statistiku */}
+            <a href="/stats" className="underline text-slate-700 hover:text-slate-900">
+              Statistika
             </a>
-          )}
+
+            {/* samo REGISTROVANI_KORISNIK vidi i omiljene, sa separatorom | */}
+            {role !== null && role !== "GOST"&& (
+              <>
+                <span className="text-slate-400">|</span>
+                <a href="/omiljene" className="underline text-slate-700 hover:text-slate-900">
+                  Moje omiljene
+                </a>
+              </>
+            )}
+          </div>
         </div>
+
 
         {loading ? (
           <p>Učitavanje...</p>
