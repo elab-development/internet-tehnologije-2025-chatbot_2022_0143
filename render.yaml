@@ -2,7 +2,7 @@ databases:
   - name: travel-chatbot-db
     plan: free
     databaseName: travel_chatbot
-    user: postgres
+    
 
 services:
   - type: web
