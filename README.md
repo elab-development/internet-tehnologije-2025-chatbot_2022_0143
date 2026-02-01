@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Travel Chatbot 
 
-## Getting Started
+Ovaj projekat predstavlja Single Page Web aplikaciju razvijenu u okviru seminarskog rada.
+Aplikacija omogućava pregled turističkih destinacija, komunikaciju sa chatbotom, upravljanje omiljenim destinacijama i prikaz statističkih podataka.
 
-First, run the development server:
+---
+
+## 1. Opis aplikacije
+
+Travel Chatbot aplikacija je SPA (Single Page Application) koja se sastoji od frontend i backend dela, povezanih kroz REST API.
+
+Glavne funkcionalnosti aplikacije:
+- prikaz liste turističkih destinacija
+- dodavanje i uklanjanje destinacija iz omiljenih
+- chatbot komunikacija
+- prikaz statistike destinacija pomoću grafičkog prikaza
+- integracija sa eksternim API-jima
+- role sistem (gost, registrovani korisnik, administrator)
+
+Aplikacija je dockerizovana i može se pokrenuti jedinstvenom komandom.
+
+---
+
+## 2. Korišćene tehnologije
+
+### Frontend
+- Next.js (React framework)
+- TypeScript
+- Tailwind CSS
+
+### Backend
+- Next.js API Routes
+- Prisma ORM
+- PostgreSQL baza podataka
+
+### Dodatne tehnologije
+- Docker i Docker Compose
+- Swagger (API dokumentacija)
+- Google Charts (vizualizacija podataka)
+- Eksterni REST API-ji
+- GitHub Actions (CI/CD)
+- Jest i Supertest (automatizovani testovi)
+
+---
+
+## 3. Arhitektura sistema
+
+Aplikacija se sastoji iz sledećih servisa:
+- **Frontend/Backend aplikacija** (Next.js)
+- **PostgreSQL baza podataka**
+
+Komunikacija između servisa realizovana je pomoću Docker Compose alata.
+
+---
+
+## 4. Pokretanje aplikacije (lokalno)
+
+### 4.1 Preduslovi
+Neophodno je da su instalirani:
+- Docker
+- Docker Compose
+
+---
+
+### 4.2 Pokretanje aplikacije
+
+U root direktorijumu projekta pokrenuti sledeću komandu:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+docker compose up --build
