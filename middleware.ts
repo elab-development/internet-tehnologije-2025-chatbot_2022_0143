@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const ALLOWED_ORIGINS = ["http://localhost:3000"]; // dodaj prod domen kad deployujete
+const ALLOWED_ORIGINS = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "https://travel-chatbot-app.onrender.com",
+  "https://www.travel-chatbot-app.onrender.com",
+];
+
 
 export const config = {
   matcher: ["/api/:path*"],
