@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { getAuthFromRequest } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   try {
+    const prisma = getPrisma();
     const { userId, role } = await getAuthFromRequest();
 
     if (!userId || (role !== "ADMIN" && role !== "REGISTROVANI_KORISNIK")) {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { getAuthFromRequest } from "@/lib/auth";
 
 type DestinationPayload = {
@@ -16,6 +16,7 @@ export async function PUT(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const prisma = getPrisma();
     const { id } = await context.params;
     console.log("PUT /api/destinations/[id] id:", id);
 
@@ -76,6 +77,7 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const prisma = getPrisma();
     const { id } = await context.params;
     console.log("DELETE /api/destinations/[id] id:", id);
 

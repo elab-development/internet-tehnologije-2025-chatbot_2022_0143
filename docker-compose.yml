@@ -23,6 +23,8 @@ services:
       - /app/node_modules
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/travel_chatbot?schema=public
+      HF_API_TOKEN: ${HF_API_TOKEN}
+      HF_MODEL: ${HF_MODEL}
     depends_on:
       - db
     command: sh -c "npx prisma generate && npm run dev"

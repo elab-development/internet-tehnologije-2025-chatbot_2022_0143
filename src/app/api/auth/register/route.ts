@@ -1,17 +1,16 @@
 import { NextResponse } from "next/server";
-// @ts-ignore  
+// @ts-ignore
 import bcrypt from "bcrypt";
-import { prisma } from "@/lib/prisma";
-
+import { getPrisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
+    const prisma = getPrisma();
     const body = await request.json();
     const { email, password, name } = body;
 
-    
     if (!email || !password) {
       return NextResponse.json(
         { message: "Email i lozinka su obavezni." },
@@ -21,13 +20,12 @@ export async function POST(request: Request) {
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-    return NextResponse.json(
+      return NextResponse.json(
         { message: "Email nije validnog formata." },
         { status: 400 }
-    );
+      );
     }
 
-    
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
@@ -39,7 +37,6 @@ export async function POST(request: Request) {
       );
     }
 
-    
     const registeredRole = await prisma.role.findFirst({
       where: { name: "REGISTROVANI_KORISNIK" },
     });
@@ -54,10 +51,8 @@ export async function POST(request: Request) {
       );
     }
 
-    
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    
     const newUser = await prisma.user.create({
       data: {
         email,
@@ -73,7 +68,6 @@ export async function POST(request: Request) {
       },
     });
 
-    
     return NextResponse.json(
       {
         message: "Registracija uspešna.",
@@ -83,12 +77,11 @@ export async function POST(request: Request) {
     );
   } catch (error: any) {
     console.error("Greška pri registraciji:", error);
-    
+
     return NextResponse.json(
       {
         message:
-          "Greška pri registraciji: " +
-          (error?.message || "Nepoznata greška."),
+          "Greška pri registraciji: " + (error?.message || "Nepoznata greška."),
       },
       { status: 500 }
     );

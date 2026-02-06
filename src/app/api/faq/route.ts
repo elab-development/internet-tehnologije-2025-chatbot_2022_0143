@@ -1,7 +1,7 @@
 
 
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { getAuthFromRequest } from "@/lib/auth";
 
 type FaqPayload = {
@@ -13,6 +13,7 @@ type FaqPayload = {
 
 export async function GET(req: NextRequest) {
   try {
+    const prisma = getPrisma();
     const { searchParams } = new URL(req.url);
     const limitParam = searchParams.get("limit");
 
@@ -63,6 +64,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const prisma = getPrisma();
     const { role } = await getAuthFromRequest();
 
     if (role !== "ADMIN") {

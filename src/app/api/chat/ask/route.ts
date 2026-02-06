@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { getAuthFromRequest } from "@/lib/auth";
 
 type AskBody = {
@@ -46,8 +46,73 @@ function overlapScore(a: string[], b: string[]): number {
   return hit;
 }
 
+// ===== AI (HuggingFace) =====
+const HF_MODEL = process.env.HF_MODEL || "HuggingFaceH4/zephyr-7b-beta";
+const HF_API_TOKEN = process.env.HF_API_TOKEN || "";
+
+async function askHuggingFace(userQuestion: string): Promise<string | null> {
+  if (!HF_API_TOKEN) return null;
+
+  const prompt = [
+    "Ti si Travel Chatbot. Odgovaraj na srpskom.",
+    "Odgovaraj kratko, jasno i korisno.",
+    "Ako pitanje nije vezano za putovanja, ljubazno reci da pomažeš oko putovanja.",
+    "",
+    `Pitanje: ${userQuestion}`,
+    "Odgovor:",
+  ].join("\n");
+
+  const url = `https://api-inference.huggingface.co/models/${encodeURIComponent(HF_MODEL)}`;
+
+  // HF free tier ponekad vrati 503 (model se “budi”) -> 1 retry
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${HF_API_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        inputs: prompt,
+        parameters: {
+          max_new_tokens: 180,
+          temperature: 0.7,
+          return_full_text: false,
+        },
+        options: { wait_for_model: true },
+      }),
+      cache: "no-store",
+    });
+
+    if (resp.status === 503 && attempt === 1) {
+      await new Promise((r) => setTimeout(r, 1500));
+      continue;
+    }
+
+    if (!resp.ok) {
+      const txt = await resp.text().catch(() => "");
+      console.error("HF error:", resp.status, txt);
+      return null;
+    }
+
+    const data: any = await resp.json().catch(() => null);
+
+    if (Array.isArray(data) && data[0]?.generated_text) {
+      return String(data[0].generated_text).trim();
+    }
+    if (data?.generated_text) {
+      return String(data.generated_text).trim();
+    }
+
+    return null;
+  }
+
+  return null;
+}
+
 export async function POST(req: NextRequest) {
   try {
+    const prisma = getPrisma();
     const body = (await req.json().catch(() => null)) as AskBody | null;
     const q = (body?.question ?? "").trim();
 
@@ -55,6 +120,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Pitanje je obavezno." }, { status: 400 });
     }
 
+    // 1) POKUŠAJ IZ BAZE (kao pre)
     const userTokens = tokens(q);
 
     const questions = await prisma.question.findMany({
@@ -82,50 +148,70 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    if (!best || bestScore === 0 || !best.answer?.text) {
+    // Ako je nađen dobar match u bazi
+    if (best && bestScore > 0 && best.answer?.text) {
+      const baseKw = splitKeywords(best.keywords);
+      const baseCat = best.category ? normalize(best.category) : null;
+
+      const related = questions
+        .filter((q2) => q2.id !== best!.id && q2.answer?.text)
+        .map((q2) => {
+          const kw2 = splitKeywords(q2.keywords);
+          const sameCat =
+            baseCat && q2.category ? normalize(q2.category) === baseCat : false;
+          const score = (sameCat ? 100 : 0) + overlapScore(baseKw, kw2);
+          return { id: q2.id, questionText: q2.text, score };
+        })
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 3)
+        .map(({ id, questionText }) => ({ id, questionText }));
+
+      // Snimi u istoriju za ulogovane
+      const { userId, role } = await getAuthFromRequest();
+      if ((role === "ADMIN" || role === "REGISTROVANI_KORISNIK") && userId) {
+        const idNum = Number(userId);
+        if (!Number.isNaN(idNum)) {
+          await prisma.chatHistory
+            .create({ data: { userId: idNum, question: q, answer: best.answer.text } })
+            .catch(() => {});
+        }
+      }
+
       return NextResponse.json(
         {
-          found: false,
-          answerText: "Izvinjavam se, ali trenutno nemam odgovor na Vase pitanje.",
-          relatedQuestions: [],
+          found: true,
+          source: "db",
+          matchedQuestionId: best.id,
+          answerText: best.answer.text,
+          relatedQuestions: related,
         },
         { status: 200, headers: { "Cache-Control": "no-store" } }
       );
     }
 
-    const baseKw = splitKeywords(best.keywords);
-    const baseCat = best.category ? normalize(best.category) : null;
+    // 2) FALLBACK NA AI
+    const aiAnswer = await askHuggingFace(q);
 
-    const related = questions
-      .filter((q2) => q2.id !== best!.id && q2.answer?.text)
-      .map((q2) => {
-        const kw2 = splitKeywords(q2.keywords);
-        const sameCat =
-          baseCat && q2.category ? normalize(q2.category) === baseCat : false;
-        const score = (sameCat ? 100 : 0) + overlapScore(baseKw, kw2);
-        return { id: q2.id, questionText: q2.text, score };
-      })
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 3)
-      .map(({ id, questionText }) => ({ id, questionText }));
+    const finalAnswer =
+      aiAnswer || "Izvinjavam se, ali trenutno nemam odgovor na Vase pitanje.";
 
-    
+    // Snimi u istoriju (i AI odgovore) za ulogovane
     const { userId, role } = await getAuthFromRequest();
     if ((role === "ADMIN" || role === "REGISTROVANI_KORISNIK") && userId) {
       const idNum = Number(userId);
       if (!Number.isNaN(idNum)) {
-        await prisma.chatHistory.create({
-          data: { userId: idNum, question: q, answer: best.answer.text },
-        }).catch(() => {});
+        await prisma.chatHistory
+          .create({ data: { userId: idNum, question: q, answer: finalAnswer } })
+          .catch(() => {});
       }
     }
 
     return NextResponse.json(
       {
-        found: true,
-        matchedQuestionId: best.id,
-        answerText: best.answer.text,
-        relatedQuestions: related,
+        found: false,
+        source: aiAnswer ? "ai" : "fallback",
+        answerText: finalAnswer,
+        relatedQuestions: [],
       },
       { status: 200, headers: { "Cache-Control": "no-store" } }
     );
@@ -134,6 +220,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         found: false,
+        source: "fallback",
         answerText: "Izvinjavam se, ali trenutno nemam odgovor na Vase pitanje.",
         relatedQuestions: [],
       },

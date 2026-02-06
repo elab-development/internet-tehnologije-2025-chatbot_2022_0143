@@ -1,7 +1,7 @@
 
 
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { getAuthFromRequest } from "@/lib/auth";
 
 type FaqPayload = {
@@ -17,6 +17,7 @@ export async function PUT(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const prisma = getPrisma();
     const { role } = await getAuthFromRequest();
 
     if (role !== "ADMIN") {
@@ -92,6 +93,7 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const prisma = getPrisma();
     const { role } = await getAuthFromRequest();
 
     if (role !== "ADMIN") {

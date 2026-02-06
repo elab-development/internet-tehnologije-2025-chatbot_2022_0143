@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { getAuthFromRequest } from "@/lib/auth";
 
 function isAllowed(role: string | null) {
@@ -7,6 +7,7 @@ function isAllowed(role: string | null) {
 }
 
 export async function GET() {
+  const prisma = getPrisma();
   const { userId, role } = await getAuthFromRequest();
 
   if (!userId) {
@@ -38,6 +39,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const prisma = getPrisma();
   const { userId, role } = await getAuthFromRequest();
 
   if (!userId) {

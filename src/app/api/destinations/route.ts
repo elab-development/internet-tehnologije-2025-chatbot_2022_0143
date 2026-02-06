@@ -1,10 +1,11 @@
 
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 
 
 export async function GET() {
   try {
+    const prisma = getPrisma();
     const destinations = await prisma.destination.findMany();
     return NextResponse.json(destinations, { status: 200 });
   } catch (error) {
@@ -28,6 +29,7 @@ type DestinationCreatePayload = {
 
 export async function POST(req: NextRequest) {
   try {
+    const prisma = getPrisma();
     const body: DestinationCreatePayload = await req.json();
     const { nameCity, country, description, slug, rating } = body;
 

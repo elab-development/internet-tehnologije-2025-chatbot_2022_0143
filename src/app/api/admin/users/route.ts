@@ -2,13 +2,14 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 // @ts-ignore
 import bcrypt from "bcrypt";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
-
+ 
 
 export async function GET() {
   try {
+    const prisma = getPrisma();
     const cookieStore = await cookies();
     const role = cookieStore.get("role")?.value;
 
@@ -44,6 +45,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const prisma = getPrisma();
     const cookieStore = await cookies();
     const role = cookieStore.get("role")?.value;
 

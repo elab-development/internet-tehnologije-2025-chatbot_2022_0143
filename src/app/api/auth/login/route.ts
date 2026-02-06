@@ -2,12 +2,13 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 // @ts-ignore
 import bcrypt from "bcrypt";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
+    const prisma = getPrisma();
     const body = await req.json().catch(() => null);
 
     const emailRaw = (body?.email ?? "") as string;
@@ -28,7 +29,6 @@ export async function POST(req: Request) {
       include: { role: true },
     });
 
-    
     if (!user) {
       return NextResponse.json(
         { message: "Neuspešno logovanje. Proverite kredencijale." },
@@ -36,7 +36,6 @@ export async function POST(req: Request) {
       );
     }
 
-    
     const ok = await bcrypt.compare(password, user.password);
 
     if (!ok) {
@@ -48,7 +47,7 @@ export async function POST(req: Request) {
 
     const roleName = user.role?.name ?? "REGISTROVANI_KORISNIK";
 
-    const cookieStore = await cookies(); 
+    const cookieStore = await cookies();
     cookieStore.set("userId", String(user.id), { httpOnly: true, path: "/" });
     cookieStore.set("role", roleName, { httpOnly: true, path: "/" });
 
