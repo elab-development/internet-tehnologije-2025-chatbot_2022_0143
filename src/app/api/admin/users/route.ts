@@ -3,9 +3,11 @@ import { cookies } from "next/headers";
 // @ts-ignore
 import bcrypt from "bcrypt";
 import { getPrisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 
 export const runtime = "nodejs";
- 
+
+type UserWithRole = Prisma.UserGetPayload<{ include: { role: true } }>;
 
 export async function GET() {
   try {
@@ -20,12 +22,12 @@ export async function GET() {
       );
     }
 
-    const users = await prisma.user.findMany({
+    const users = (await prisma.user.findMany({
       include: { role: true },
       orderBy: { id: "asc" },
-    });
+    })) as UserWithRole[];
 
-    const data = users.map((u) => ({
+    const data = users.map((u: UserWithRole) => ({
       id: u.id,
       email: u.email,
       name: u.name,
@@ -41,7 +43,6 @@ export async function GET() {
     );
   }
 }
-
 
 export async function POST(req: Request) {
   try {
@@ -71,13 +72,12 @@ export async function POST(req: Request) {
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-    return NextResponse.json(
+      return NextResponse.json(
         { message: "Email nije validnog formata." },
         { status: 400 }
-    );
+      );
     }
 
-    
     const existing = await prisma.user.findUnique({
       where: { email },
     });
@@ -89,7 +89,6 @@ export async function POST(req: Request) {
       );
     }
 
-    
     const adminRole = await prisma.role.findUnique({
       where: { name: "ADMIN" },
     });
@@ -101,10 +100,8 @@ export async function POST(req: Request) {
       );
     }
 
-    
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    
     const newAdmin = await prisma.user.create({
       data: {
         email,
