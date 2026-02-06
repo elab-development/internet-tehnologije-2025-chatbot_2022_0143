@@ -10,38 +10,65 @@ type Destination = {
   rating?: number | null;
 };
 
+type UserRole = "GOST" | "REGISTROVANI_KORISNIK" | "ADMIN";
+
 type AuthMeResponse = {
-  role?: "USER" | "ADMIN";
+  user?: {
+    roleName?: UserRole | null;
+  } | null;
+  roleName?: UserRole | null;
 };
 
 export default function OmiljenePage() {
-  const [role, setRole] = useState<"USER" | "ADMIN" | "GUEST">("GUEST");
+  const [role, setRole] = useState<UserRole>("GOST");
   const [items, setItems] = useState<Destination[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // (nije obavezno, ali ostavljam jer ti je već bilo tu)
   const ids = useMemo(() => new Set(items.map((d) => d.id)), [items]);
 
   useEffect(() => {
     async function loadAuth() {
       try {
-        const res = await fetch("/api/auth/me", { cache: "no-store" });
-        if (!res.ok) return;
-        const data: AuthMeResponse = await res.json();
-        if (data?.role === "USER" || data?.role === "ADMIN") setRole(data.role);
-      } catch {}
+        const res = await fetch("/api/auth/me", {
+          credentials: "include",
+          cache: "no-store",
+        });
+
+        const data: AuthMeResponse = await res.json().catch(() => ({} as any));
+        const roleName = data?.user?.roleName ?? data?.roleName;
+
+        if (
+          roleName === "ADMIN" ||
+          roleName === "REGISTROVANI_KORISNIK" ||
+          roleName === "GOST"
+        ) {
+          setRole(roleName);
+        } else {
+          setRole("GOST");
+        }
+      } catch {
+        setRole("GOST");
+      }
     }
 
     async function loadFavorites() {
       try {
-        const res = await fetch("/api/favorites", { cache: "no-store" });
+        const res = await fetch("/api/favorites", {
+          credentials: "include",
+          cache: "no-store",
+        });
+
         const data = await res.json().catch(() => ({}));
+
         if (!res.ok) {
-          setError(data?.message || `Greška. Status: ${res.status}`);
+          setError((data as any)?.message || `Greška. Status: ${res.status}`);
           return;
         }
+
         setItems(data as Destination[]);
-      } catch (e) {
+      } catch {
         setError("Greška pri učitavanju omiljenih.");
       } finally {
         setLoading(false);
@@ -54,19 +81,24 @@ export default function OmiljenePage() {
 
   async function removeFavorite(destinationId: number) {
     try {
-      const res = await fetch(`/api/favorites/${destinationId}`, { method: "DELETE" });
+      const res = await fetch(`/api/favorites/${destinationId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
       const data = await res.json().catch(() => ({}));
+
       if (!res.ok) {
-        alert(data?.message || `Greška. Status: ${res.status}`);
+        alert((data as any)?.message || `Greška. Status: ${res.status}`);
         return;
       }
+
       setItems((prev) => prev.filter((d) => d.id !== destinationId));
     } catch {
       alert("Greška pri komunikaciji sa serverom.");
     }
   }
 
-  
   if (role === "ADMIN") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#FFF7E8] via-[#FFEFD7] to-[#FFE4B5] px-4 py-8">
@@ -82,7 +114,10 @@ export default function OmiljenePage() {
       <div className="max-w-5xl mx-auto space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold text-slate-900">Moje omiljene</h2>
-          <a href="/destinacija" className="text-sm underline text-slate-700 hover:text-slate-900">
+          <a
+            href="/destinacija"
+            className="text-sm underline text-slate-700 hover:text-slate-900"
+          >
             Nazad na destinacije
           </a>
         </div>
@@ -116,7 +151,6 @@ export default function OmiljenePage() {
                   </p>
                 )}
 
-                {/* u omiljenim je uvek ❤️, klik uklanja */}
                 <button
                   className="absolute bottom-3 right-3 text-xl hover:scale-110 transition"
                   title="Ukloni iz omiljenih"

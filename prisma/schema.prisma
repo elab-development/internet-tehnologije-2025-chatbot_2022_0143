@@ -8,7 +8,7 @@ datasource db {
 
 model Role {
   id    Int    @id @default(autoincrement())
-  name  String @unique   // GUEST | USER | ADMIN
+  name  String @unique   // GOST | REGISTROVANI_KORISNIK | ADMIN
 
   users User[]
 }
