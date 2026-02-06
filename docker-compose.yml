@@ -31,7 +31,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: sh -c "npx prisma generate && npm run start -- -p 3000"
+    command: sh -c "npx prisma generate && npm run build && npm run start -- -p 3000"
 
 volumes:
   db_data:

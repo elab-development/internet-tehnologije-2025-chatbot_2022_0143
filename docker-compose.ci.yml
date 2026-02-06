@@ -1,0 +1,14 @@
+services:
+  app:
+    build: .
+    restart: "no"
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/travel_chatbot?schema=public
+      NODE_ENV: production
+      HF_API_TOKEN: ${HF_API_TOKEN}
+    depends_on:
+      db:
+        condition: service_healthy
+    command: sh -c "npx prisma generate && npm run start -- -p 3000"
