@@ -4,13 +4,12 @@ WORKDIR /app
 
 RUN apk add --no-cache libc6-compat
 
-# Copy only what we need for install + prisma generate
 COPY package*.json ./
 COPY prisma ./prisma
 COPY prisma.config.ts ./prisma.config.ts
 
 RUN npm ci
-RUN npx prisma generate
+# NE radimo prisma generate u build fazi (CI nema DATABASE_URL tokom build-a)
 
 # --- build ---
 FROM node:20-alpine AS builder
@@ -41,5 +40,5 @@ COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 
 EXPOSE 3000
 
-# Render sets PORT; Next should listen on it
-CMD sh -c "npx prisma migrate deploy && npm run start -- -p ${PORT:-3000}"
+# U runtime-u postoji DATABASE_URL (Render) ili je setovan u docker-compose (CI)
+CMD sh -c "npx prisma generate && npx prisma migrate deploy && npm run start -- -p ${PORT:-3000}"
