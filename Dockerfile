@@ -4,8 +4,10 @@ WORKDIR /app
 
 RUN apk add --no-cache libc6-compat
 
+# Copy only what we need for install + prisma generate
 COPY package*.json ./
 COPY prisma ./prisma
+COPY prisma.config.ts ./prisma.config.ts
 
 RUN npm ci
 RUN npx prisma generate
@@ -35,8 +37,9 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 
 EXPOSE 3000
 
-# Render postavlja PORT; Next treba da sluša na njemu
+# Render sets PORT; Next should listen on it
 CMD sh -c "npx prisma migrate deploy && npm run start -- -p ${PORT:-3000}"

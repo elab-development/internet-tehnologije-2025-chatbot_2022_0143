@@ -79,7 +79,3 @@ model ChatHistory {
   user User @relation(fields: [userId], references: [id])
 }
 
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
