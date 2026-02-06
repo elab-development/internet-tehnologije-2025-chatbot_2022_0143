@@ -48,4 +48,5 @@ COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 EXPOSE 3000
 
 # U runtime-u postoji DATABASE_URL (Render) ili je setovan u docker-compose (CI)
-CMD sh -c "npx prisma generate && npx prisma migrate deploy && npm run start -- -p ${PORT:-3000}"
+CMD sh -c "npx prisma generate && npx prisma migrate deploy && node prisma/seed.js && npm run start -- -p ${PORT:-3000}"
+
