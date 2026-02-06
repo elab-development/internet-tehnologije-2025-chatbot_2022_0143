@@ -32,6 +32,10 @@ jobs:
           docker compose -f docker-compose.yml -f docker-compose.ci.yml logs db
           exit 1
 
+      - name: Run Prisma migrations
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml exec -T app npx prisma migrate deploy
+
       - name: Seed baza
         run: |
           docker compose -f docker-compose.yml -f docker-compose.ci.yml exec -T app npx prisma db seed
