@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
     });
 
     if (isAdminListMode) {
-      const adminFaqs = questions.map((q) => ({
+     const adminFaqs = questions.map((q: any) => ({
         id: q.id,
         questionText: q.text,
         answerText: q.answer?.text ?? "",
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const created = await prisma.$transaction(async (tx) => {
+    const created = await prisma.$transaction(async (tx: any) => {
       const question = await tx.question.create({
         data: {
           text: questionText.trim(),

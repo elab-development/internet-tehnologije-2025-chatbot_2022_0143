@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   db:
     image: postgres:16
@@ -12,6 +10,11 @@ services:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d travel_chatbot"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
   app:
     build: .
@@ -24,12 +27,11 @@ services:
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/travel_chatbot?schema=public
       HF_API_TOKEN: ${HF_API_TOKEN}
-      
+      NODE_ENV: production
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     command: sh -c "npx prisma generate && npm run start -- -p 3000"
-
-
 
 volumes:
   db_data:

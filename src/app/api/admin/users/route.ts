@@ -3,11 +3,15 @@ import { cookies } from "next/headers";
 // @ts-ignore
 import bcrypt from "bcrypt";
 import { getPrisma } from "@/lib/prisma";
-import type { Prisma } from "@prisma/client";
 
 export const runtime = "nodejs";
 
-type UserWithRole = Prisma.UserGetPayload<{ include: { role: true } }>;
+type UserRow = {
+  id: number;
+  email: string;
+  name: string | null;
+  role?: { name: string } | null;
+};
 
 export async function GET() {
   try {
@@ -22,12 +26,12 @@ export async function GET() {
       );
     }
 
-    const users = (await prisma.user.findMany({
+    const users = await prisma.user.findMany({
       include: { role: true },
       orderBy: { id: "asc" },
-    })) as UserWithRole[];
+    });
 
-    const data = users.map((u: UserWithRole) => ({
+    const data = (users as unknown as UserRow[]).map((u) => ({
       id: u.id,
       email: u.email,
       name: u.name,
@@ -78,10 +82,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const existing = await prisma.user.findUnique({
-      where: { email },
-    });
-
+    const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
       return NextResponse.json(
         { message: "Korisnik sa tim emailom već postoji." },

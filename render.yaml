@@ -9,7 +9,7 @@ services:
     env: docker
     plan: free
     autoDeploy: true
-    healthCheckPath: /
+    healthCheckPath: /api/faq?limit=1
     envVars:
       - key: DATABASE_URL
         fromDatabase:

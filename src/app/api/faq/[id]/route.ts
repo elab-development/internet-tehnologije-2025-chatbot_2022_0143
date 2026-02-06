@@ -47,7 +47,13 @@ export async function PUT(
       );
     }
 
-    const updated = await prisma.$transaction(async (tx) => {
+    type PrismaType = ReturnType<typeof getPrisma>;
+    type Tx = Omit<
+      PrismaType,
+      "$connect" | "$disconnect" | "$on" | "$transaction" | "$extends"
+    >;
+
+    const updated = await prisma.$transaction(async (tx: Tx) =>  {
       const question = await tx.question.update({
         where: { id: idNum },
         data: {

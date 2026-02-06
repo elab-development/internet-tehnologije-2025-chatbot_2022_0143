@@ -18,15 +18,29 @@ jobs:
         run: |
           docker compose up -d --build
 
-      - name: Run DB migrations
+            - name: Wait for DB to be ready
         run: |
-          docker compose exec -T app npx prisma migrate deploy
+          for i in {1..60}; do
+            if docker compose exec -T db pg_isready -U postgres >/dev/null 2>&1; then
+              echo "DB is ready!"
+              exit 0
+            fi
+            echo "Waiting for DB..."
+            sleep 2
+          done
+          echo "DB not ready in time"
+          docker compose logs db
+          exit 1
 
+
+      - name: Seed baza
+        run: |
+          docker compose exec -T app npx prisma db seed
 
       - name: Wait for app to be ready
         run: |
           for i in {1..60}; do
-            if curl -sSf http://localhost:3000 >/dev/null; then
+            if curl -sSf "http://localhost:3000/api/faq?limit=1" >/dev/null; then
               echo "App is up!"
               exit 0
             fi

@@ -154,17 +154,25 @@ export async function POST(req: NextRequest) {
       const baseCat = best.category ? normalize(best.category) : null;
 
       const related = questions
-        .filter((q2) => q2.id !== best!.id && q2.answer?.text)
-        .map((q2) => {
+        .filter((q2: typeof questions[number]) => q2.id !== best!.id && q2.answer?.text)
+        .map((q2: typeof questions[number]) => {
           const kw2 = splitKeywords(q2.keywords);
           const sameCat =
             baseCat && q2.category ? normalize(q2.category) === baseCat : false;
           const score = (sameCat ? 100 : 0) + overlapScore(baseKw, kw2);
           return { id: q2.id, questionText: q2.text, score };
         })
-        .sort((a, b) => b.score - a.score)
+        .sort(
+          (
+            a: { id: number; questionText: string; score: number },
+            b: { id: number; questionText: string; score: number }
+          ) => b.score - a.score
+        )
         .slice(0, 3)
-        .map(({ id, questionText }) => ({ id, questionText }));
+        .map((x: { id: number; questionText: string; score: number }) => ({
+          id: x.id,
+          questionText: x.questionText,
+        }));
 
       // Snimi u istoriju za ulogovane
       const { userId, role } = await getAuthFromRequest();

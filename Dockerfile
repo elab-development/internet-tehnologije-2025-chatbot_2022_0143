@@ -9,7 +9,7 @@ COPY prisma ./prisma
 COPY prisma.config.ts ./prisma.config.ts
 
 RUN npm ci
-# NE radimo prisma generate u build fazi (CI nema DATABASE_URL tokom build-a)
+
 
 # --- build ---
 FROM node:20-alpine AS builder
@@ -20,6 +20,13 @@ RUN apk add --no-cache libc6-compat
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+#  DUMMY DATABASE_URL (samo za prisma generate)
+ENV DATABASE_URL="postgresql://user:pass@localhost:5432/dummy"
+
+#  GENERIŠE TIPOVE (ne konektuje se na bazu)
+RUN npx prisma generate
+
+#  tek sad Next build
 RUN npm run build
 
 # --- runner ---
