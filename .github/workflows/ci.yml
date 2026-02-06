@@ -18,7 +18,7 @@ jobs:
         run: |
           docker compose up -d --build
 
-            - name: Wait for DB to be ready
+      - name: Wait for DB to be ready
         run: |
           for i in {1..60}; do
             if docker compose exec -T db pg_isready -U postgres >/dev/null 2>&1; then
@@ -31,7 +31,6 @@ jobs:
           echo "DB not ready in time"
           docker compose logs db
           exit 1
-
 
       - name: Seed baza
         run: |
