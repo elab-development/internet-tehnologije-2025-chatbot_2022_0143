@@ -44,9 +44,7 @@ function overlapScore(a: string[], b: string[]): number {
   let hit = 0;
   for (const t of a) if (setB.has(t)) hit++;
   return hit;
-}
-
-// ===== AI (HuggingFace) =====
+}// ===== AI (HuggingFace) =====
 const HF_MODEL = process.env.HF_MODEL || "HuggingFaceH4/zephyr-7b-beta";
 const HF_API_TOKEN = process.env.HF_API_TOKEN || "";
 
@@ -64,52 +62,76 @@ async function askHuggingFace(userQuestion: string): Promise<string | null> {
 
   const url = `https://router.huggingface.co/hf-inference/models/${encodeURIComponent(HF_MODEL)}`;
 
-
   // HF free tier ponekad vrati 503 (model se “budi”) -> 1 retry
   for (let attempt = 1; attempt <= 2; attempt++) {
-    const resp = await fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${HF_API_TOKEN}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        inputs: prompt,
-        parameters: {
-          max_new_tokens: 180,
-          temperature: 0.7,
-          return_full_text: false,
+    // timeout 12s
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
+
+    try {
+      const resp = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${HF_API_TOKEN}`,
+          "Content-Type": "application/json",
         },
-        options: { wait_for_model: true },
-      }),
-      cache: "no-store",
-    });
+        body: JSON.stringify({
+          inputs: prompt,
+          parameters: {
+            max_new_tokens: 180,
+            temperature: 0.7,
+            return_full_text: false,
+          },
+          options: { wait_for_model: true },
+        }),
+        cache: "no-store",
+        signal: controller.signal,
+      });
 
-    if (resp.status === 503 && attempt === 1) {
-      await new Promise((r) => setTimeout(r, 1500));
-      continue;
-    }
+      if (resp.status === 503 && attempt === 1) {
+        await new Promise((r) => setTimeout(r, 1500));
+        continue;
+      }
 
-    if (!resp.ok) {
-      const txt = await resp.text().catch(() => "");
-      console.error("HF error:", resp.status, txt);
+      if (!resp.ok) {
+        const txt = await resp.text().catch(() => "");
+        console.error("HF error:", resp.status, txt);
+
+        // 404 = pogrešan model/endpoint ili model nije dostupan preko routera
+        if (resp.status === 404) return null;
+
+        return null;
+      }
+
+      const data: any = await resp.json().catch(() => null);
+
+      // Najčešći format: [{ generated_text: "..." }]
+      if (Array.isArray(data) && data[0]?.generated_text) {
+        return String(data[0].generated_text).trim();
+      }
+      // Alternativni format: { generated_text: "..." }
+      if (data?.generated_text) {
+        return String(data.generated_text).trim();
+      }
+      // HF ponekad vrati { error: "..."}
+      if (data?.error) {
+        console.error("HF error payload:", data.error);
+        return null;
+      }
+
       return null;
+    } catch (e: any) {
+      // timeout / network
+      console.error("HF fetch failed:", e?.message ?? e);
+      return null;
+    } finally {
+      clearTimeout(timeout);
     }
-
-    const data: any = await resp.json().catch(() => null);
-
-    if (Array.isArray(data) && data[0]?.generated_text) {
-      return String(data[0].generated_text).trim();
-    }
-    if (data?.generated_text) {
-      return String(data.generated_text).trim();
-    }
-
-    return null;
   }
 
   return null;
 }
+
 
 export async function POST(req: NextRequest) {
   try {
