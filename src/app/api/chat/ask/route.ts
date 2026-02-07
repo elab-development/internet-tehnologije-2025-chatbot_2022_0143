@@ -62,7 +62,8 @@ async function askHuggingFace(userQuestion: string): Promise<string | null> {
     "Odgovor:",
   ].join("\n");
 
-  const url = `https://api-inference.huggingface.co/models/${encodeURIComponent(HF_MODEL)}`;
+  const url = `https://router.huggingface.co/hf-inference/models/${encodeURIComponent(HF_MODEL)}`;
+
 
   // HF free tier ponekad vrati 503 (model se “budi”) -> 1 retry
   for (let attempt = 1; attempt <= 2; attempt++) {

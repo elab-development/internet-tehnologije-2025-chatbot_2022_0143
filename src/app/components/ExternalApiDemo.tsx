@@ -56,7 +56,7 @@ export default function ExternalApiDemo() {
       }
 
       const data = await r.json();
-      const c = Array.isArray(data) ? data[0] : null;
+      const c = Array.isArray(data) ? data[0] : data;
 
       setCountry({
         status: "ok",
