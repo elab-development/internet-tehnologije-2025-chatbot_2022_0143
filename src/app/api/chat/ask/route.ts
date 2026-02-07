@@ -143,8 +143,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Pitanje je obavezno." }, { status: 400 });
     }
 
-    // 1) POKUŠAJ IZ BAZE (kao pre)
     const userTokens = tokens(q);
+
+    const GENERAL_QUESTIONS = ["glavni", "sat", "datum", "dan", "vreme"];
+    const isGeneral = GENERAL_QUESTIONS.some((w) => userTokens.includes(w));
+
+    if (isGeneral) {
+      const aiAnswer = await askHuggingFace(q);
+      return NextResponse.json({
+        found: false,
+        source: "ai",
+        answerText: aiAnswer || "Ne mogu da odgovorim.",
+        relatedQuestions: [],
+      });
+    }
+
+
+    // 1) POKUŠAJ IZ BAZE (kao pre)
+    
 
     const questions = await prisma.question.findMany({
       where: { answer: { isNot: null } },
@@ -172,7 +188,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Ako je nađen dobar match u bazi
-    if (best && bestScore > 0 && best.answer?.text) {
+    if (best && bestScore >= 3 && best.answer?.text) {
       const baseKw = splitKeywords(best.keywords);
       const baseCat = best.category ? normalize(best.category) : null;
 
