@@ -12,6 +12,7 @@ type ChatMessage = {
   text: string;
   kind?: "followup";
   relatedQuestions?: { id: number; questionText: string }[];
+  source?: "db" | "ai" | "fallback";
 };
 
 type FaqItem = {
@@ -46,7 +47,6 @@ export default function HomePage() {
 
   const [sending, setSending] = useState(false);
 
-  
   useEffect(() => {
     async function checkAuth() {
       try {
@@ -75,7 +75,6 @@ export default function HomePage() {
     checkAuth();
   }, []);
 
-  
   useEffect(() => {
     async function loadFaqs() {
       try {
@@ -116,6 +115,7 @@ export default function HomePage() {
     return data as
       | {
           found: boolean;
+          source?: "db" | "ai" | "fallback";
           answerText: string;
           relatedQuestions: { id: number; questionText: string }[];
         }
@@ -148,6 +148,7 @@ export default function HomePage() {
         id: Date.now() + 1,
         from: "bot",
         text: answerText,
+        source: (data?.source as any) ?? (data?.found ? "db" : "fallback"),
       };
 
       setMessages((prev) => [...prev, botMsg]);
@@ -169,6 +170,7 @@ export default function HomePage() {
         id: Date.now() + 1,
         from: "bot",
         text: "Izvinjavam se, ali trenutno nemam odgovor na Vase pitanje.",
+        source: "fallback",
       };
       setMessages((prev) => [...prev, botMsg]);
     } finally {
@@ -277,7 +279,7 @@ export default function HomePage() {
                     }`}
                   >
                     <div
-                      className={`px-3 py-2 rounded-xl text-sm shadow-sm max-w-[85%] ${
+                      className={`relative px-3 py-2 rounded-xl text-sm shadow-sm max-w-[85%] ${
                         msg.from === "user"
                           ? "bg-[#FFDAB9] text-[#4A3630]"
                           : "bg-[#F3F3F3] text-[#3A3A3A]"
@@ -285,12 +287,21 @@ export default function HomePage() {
                     >
                       {msg.text}
 
+                      {/* Source badge - only for bot messages */}
+                      {msg.from === "bot" && msg.source && (
+                        <span className="absolute -bottom-2 right-2 text-[10px] px-2 py-[2px] rounded-full border border-slate-300 bg-slate-100 text-slate-600 shadow-sm font-mono">
+                          {msg.source}
+                        </span>
+                      )}
+
                       {msg.kind === "followup" && (
                         <div className="mt-2 space-y-2">
                           <div className="flex gap-2">
                             <button
                               type="button"
-                              onClick={() => handleFollowupYes(msg.relatedQuestions)}
+                              onClick={() =>
+                                handleFollowupYes(msg.relatedQuestions)
+                              }
                               className="text-xs rounded-full border border-slate-200 px-3 py-1 bg-white hover:bg-emerald-50"
                             >
                               Da
@@ -304,23 +315,24 @@ export default function HomePage() {
                             </button>
                           </div>
 
-                          {msg.relatedQuestions && msg.relatedQuestions.length > 0 && (
-                            <div className="flex flex-wrap gap-2">
-                              {msg.relatedQuestions.map((rq) => (
-                                <button
-                                  key={rq.id}
-                                  type="button"
-                                  onClick={() => {
-                                    removeLastFollowupIfAny();
-                                    void sendQuestion(rq.questionText);
-                                  }}
-                                  className="text-[11px] rounded-full border border-slate-200 px-3 py-1 bg-white/80 hover:bg-[#FFE4B5]/60 hover:border-[#FFE4B5] shadow-sm text-slate-700"
-                                >
-                                  {rq.questionText}
-                                </button>
-                              ))}
-                            </div>
-                          )}
+                          {msg.relatedQuestions &&
+                            msg.relatedQuestions.length > 0 && (
+                              <div className="flex flex-wrap gap-2">
+                                {msg.relatedQuestions.map((rq) => (
+                                  <button
+                                    key={rq.id}
+                                    type="button"
+                                    onClick={() => {
+                                      removeLastFollowupIfAny();
+                                      void sendQuestion(rq.questionText);
+                                    }}
+                                    className="text-[11px] rounded-full border border-slate-200 px-3 py-1 bg-white/80 hover:bg-[#FFE4B5]/60 hover:border-[#FFE4B5] shadow-sm text-slate-700"
+                                  >
+                                    {rq.questionText}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
                         </div>
                       )}
                     </div>

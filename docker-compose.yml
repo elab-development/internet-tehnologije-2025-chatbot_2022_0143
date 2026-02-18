@@ -26,7 +26,9 @@ services:
       - /app/node_modules
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/travel_chatbot?schema=public
-      HF_API_TOKEN: ${HF_API_TOKEN}
+      #HF_API_TOKEN: ${HF_API_TOKEN}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_MODEL: ${GEMINI_MODEL}
       NODE_ENV: production
     depends_on:
       db:

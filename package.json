@@ -9,6 +9,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@google/genai": "^1.41.0",
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.2.0",
     "bcrypt": "^6.0.0",

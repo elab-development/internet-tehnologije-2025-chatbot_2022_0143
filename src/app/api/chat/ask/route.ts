@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPrisma } from "@/lib/prisma";
 import { getAuthFromRequest } from "@/lib/auth";
+import { GoogleGenAI } from "@google/genai";
 
 type AskBody = {
   question: string;
@@ -44,7 +45,9 @@ function overlapScore(a: string[], b: string[]): number {
   let hit = 0;
   for (const t of a) if (setB.has(t)) hit++;
   return hit;
-}// ===== AI (HuggingFace) =====
+}
+
+// ===== AI (HuggingFace) - OSTAVLJENO, ali se više NE KORISTI =====
 const HF_MODEL = process.env.HF_MODEL || "HuggingFaceH4/zephyr-7b-beta";
 const HF_API_TOKEN = process.env.HF_API_TOKEN || "";
 
@@ -60,11 +63,11 @@ async function askHuggingFace(userQuestion: string): Promise<string | null> {
     "Odgovor:",
   ].join("\n");
 
-  const url = `https://router.huggingface.co/hf-inference/models/${encodeURIComponent(HF_MODEL)}`;
+  const url = `https://router.huggingface.co/hf-inference/models/${encodeURIComponent(
+    HF_MODEL
+  )}`;
 
-  // HF free tier ponekad vrati 503 (model se “budi”) -> 1 retry
   for (let attempt = 1; attempt <= 2; attempt++) {
-    // timeout 12s
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12000);
 
@@ -96,24 +99,18 @@ async function askHuggingFace(userQuestion: string): Promise<string | null> {
       if (!resp.ok) {
         const txt = await resp.text().catch(() => "");
         console.error("HF error:", resp.status, txt);
-
-        // 404 = pogrešan model/endpoint ili model nije dostupan preko routera
         if (resp.status === 404) return null;
-
         return null;
       }
 
       const data: any = await resp.json().catch(() => null);
 
-      // Najčešći format: [{ generated_text: "..." }]
       if (Array.isArray(data) && data[0]?.generated_text) {
         return String(data[0].generated_text).trim();
       }
-      // Alternativni format: { generated_text: "..." }
       if (data?.generated_text) {
         return String(data.generated_text).trim();
       }
-      // HF ponekad vrati { error: "..."}
       if (data?.error) {
         console.error("HF error payload:", data.error);
         return null;
@@ -121,7 +118,6 @@ async function askHuggingFace(userQuestion: string): Promise<string | null> {
 
       return null;
     } catch (e: any) {
-      // timeout / network
       console.error("HF fetch failed:", e?.message ?? e);
       return null;
     } finally {
@@ -132,6 +128,37 @@ async function askHuggingFace(userQuestion: string): Promise<string | null> {
   return null;
 }
 
+// ===== AI (Gemini) - NOVO =====
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3-flash-preview";
+
+async function askGemini(userQuestion: string): Promise<string | null> {
+  if (!GEMINI_API_KEY) return null;
+
+  const prompt = [
+    "Ti si Travel Chatbot. Odgovaraj na srpskom.",
+    "Odgovaraj kratko, jasno i korisno.",
+    "Ako pitanje nije vezano za putovanja, ljubazno reci da pomažeš oko putovanja.",
+    "",
+    `Pitanje: ${userQuestion}`,
+    "Odgovor:",
+  ].join("\n");
+
+  try {
+    const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+
+    const response = await ai.models.generateContent({
+      model: GEMINI_MODEL,
+      contents: prompt,
+    });
+
+    const text = response.text?.trim();
+    return text || null;
+  } catch (e: any) {
+    console.error("Gemini failed:", e?.message ?? e);
+    return null;
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -149,7 +176,7 @@ export async function POST(req: NextRequest) {
     const isGeneral = GENERAL_QUESTIONS.some((w) => userTokens.includes(w));
 
     if (isGeneral) {
-      const aiAnswer = await askHuggingFace(q);
+      const aiAnswer = await askGemini(q);
       return NextResponse.json({
         found: false,
         source: "ai",
@@ -158,10 +185,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-
-    // 1) POKUŠAJ IZ BAZE (kao pre)
-    
-
+    // 1) POKUŠAJ IZ BAZE
     const questions = await prisma.question.findMany({
       where: { answer: { isNot: null } },
       include: { answer: true },
@@ -236,8 +260,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 2) FALLBACK NA AI
-    const aiAnswer = await askHuggingFace(q);
+    // 2) FALLBACK NA AI (Gemini)
+    const aiAnswer = await askGemini(q);
 
     const finalAnswer =
       aiAnswer || "Izvinjavam se, ali trenutno nemam odgovor na Vase pitanje.";
