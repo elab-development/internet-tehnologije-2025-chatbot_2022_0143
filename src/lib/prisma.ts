@@ -16,7 +16,7 @@ export function getPrisma(): PrismaClient {
   const connectionString = process.env.DATABASE_URL;
 
   if (!connectionString) {
-    // Ne rušimo build importom; ali ako se pozove u runtime-u bez env -> jasno pucanje
+    
     throw new Error(
       "DATABASE_URL nije definisan. Postavi DATABASE_URL u environment varijable (Docker/Render)."
     );

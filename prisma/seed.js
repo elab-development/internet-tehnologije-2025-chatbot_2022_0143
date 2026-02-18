@@ -21,7 +21,7 @@ function slugify(city, country) {
   const s = `${city}-${country}`
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // skini dijakritike
+    .replace(/[\u0300-\u036f]/g, "") 
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)+/g, "");
   return s;
@@ -72,7 +72,7 @@ async function seedDestinations() {
       update: {
         description: d.description,
         rating: d.rating,
-        slug, // ok je i ako je već setovan
+        slug, 
       },
       create: {
         ...d,

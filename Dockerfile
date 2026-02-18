@@ -26,7 +26,7 @@ ENV DATABASE_URL="postgresql://user:pass@localhost:5432/dummy"
 #  GENERIŠE TIPOVE (ne konektuje se na bazu)
 RUN npx prisma generate
 
-#  tek sad Next build
+#  Next build
 RUN npm run build
 
 # --- runner ---
