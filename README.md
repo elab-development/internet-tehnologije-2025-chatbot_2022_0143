@@ -87,72 +87,8 @@ Svaki novi commit na glavnoj grani pokreće automatski build i deploy.
 
 ---
 
-## 6. Pokretanje aplikacije (lokalno - Docker)
 
-### 6.1 Preduslovi
-
-Neophodno je da su instalirani:
-
-- Docker
-- Docker Compose
-
----
-
-### 6.2 Podešavanje environment varijabli
-
-U root folderu projekta kreirati `.env` fajl sa sledećim vrednostima:
-
-```
-DATABASE_URL=postgresql://postgres:postgres@db:5432/travelchatbot
-GEMINI_API_KEY=VAŠ_GEMINI_API_KLJUČ
-GEMINI_MODEL=gemini-1.5-flash
-```
-
-Napomena: Gemini API ključ dobija se preko Google AI Studio platforme.
-
----
-
-### 6.3 Pokretanje aplikacije
-
-U root direktorijumu projekta pokrenuti:
-
-```bash
-docker compose up --build
-```
-
-Nakon uspešnog pokretanja aplikacija je dostupna na:
-
-```
-http://localhost:3000
-```
-
----
-
-## 7. Pokretanje bez Docker-a (razvojni režim)
-
-Ako se aplikacija pokreće bez Docker-a:
-
-1. Instalirati dependencies:
-
-```bash
-npm install
-```
-
-2. Pokrenuti razvojni server:
-
-```bash
-npm run dev
-```
-
-Aplikacija će biti dostupna na:
-
-```
-http://localhost:3000
-```
-
----
-
-## 8. CI / GitHub Actions
+## 6. CI / GitHub Actions
 
 Projekat koristi GitHub Actions za:
 
@@ -160,11 +96,10 @@ Projekat koristi GitHub Actions za:
 - Testiranje
 - Docker build validaciju
 
-CI koristi `npm ci`, zbog čega je neophodno da `package-lock.json` bude uvek sinhronizovan sa `package.json`.
 
 ---
 
-## 9. Testiranje
+## 7. Testiranje
 
 Za pokretanje testova:
 
