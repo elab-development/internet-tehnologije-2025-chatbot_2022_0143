@@ -2,51 +2,6 @@ import { NextResponse } from "next/server";
 import { getPrisma } from "@/lib/prisma";
 import { getAuthFromRequest } from "@/lib/auth";
 
-/**
- * @swagger
- * /api/auth/me:
- *   get:
- *     summary: Vraća informacije o trenutno prijavljenom korisniku
- *     description: Čita httpOnly kolačiće (userId, role) i vraća podatke o korisniku ako je prijavljen.
- *     tags:
- *       - Auth
- *     responses:
- *       200:
- *         description: Uspešan odgovor (ulogovan ili gost)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 user:
- *                   type: object
- *                   nullable: true
- *                   properties:
- *                     id:
- *                       type: integer
- *                       example: 1
- *                     email:
- *                       type: string
- *                       format: email
- *                       example: "pera@example.com"
- *                     roleName:
- *                       type: string
- *                       example: "ADMIN"
- *                 roleName:
- *                   type: string
- *                   nullable: true
- *                   example: "ADMIN"
- *       500:
- *         description: Serverska greška
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Greška na serveru."
- */
 
 export async function GET() {
   try {
