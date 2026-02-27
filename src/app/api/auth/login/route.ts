@@ -6,6 +6,92 @@ import { getPrisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Prijava korisnika
+ *     description: Proverava kredencijale i postavlja httpOnly kolačiće `userId` i `role`.
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: "pera@example.com"
+ *               password:
+ *                 type: string
+ *                 example: "tajnaLozinka123"
+ *             required:
+ *               - email
+ *               - password
+ *     responses:
+ *       200:
+ *         description: Uspešno logovanje (postavljeni kolačići)
+ *         headers:
+ *           Set-Cookie:
+ *             description: Postavlja `userId` i `role` kao httpOnly cookies
+ *             schema:
+ *               type: string
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 1
+ *                     email:
+ *                       type: string
+ *                       format: email
+ *                       example: "pera@example.com"
+ *                     roleName:
+ *                       type: string
+ *                       example: "REGISTROVANI_KORISNIK"
+ *                 roleName:
+ *                   type: string
+ *                   example: "REGISTROVANI_KORISNIK"
+ *       400:
+ *         description: Nedostaje email ili lozinka
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Email i lozinka su obavezni."
+ *       401:
+ *         description: Neispravni kredencijali
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Neuspešno logovanje. Proverite kredencijale."
+ *       500:
+ *         description: Serverska greška
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Serverska greška pri logovanju."
+ */
+
 export async function POST(req: Request) {
   try {
     const prisma = getPrisma();

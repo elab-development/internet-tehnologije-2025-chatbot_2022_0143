@@ -128,7 +128,7 @@ async function askHuggingFace(userQuestion: string): Promise<string | null> {
   return null;
 }
 
-// ===== AI (Gemini) - NOVO =====
+// ===== AI (Gemini) =====
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3-flash-preview";
 

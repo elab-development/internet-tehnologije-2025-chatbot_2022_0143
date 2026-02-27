@@ -16,7 +16,7 @@ export const config = {
 export function middleware(req: NextRequest) {
   const origin = req.headers.get("origin");
 
-  // ✅ CSRF basic: za state-changing metode blokiraj cross-site origin
+  //  CSRF basic: za state-changing metode blokiraj cross-site origin
   if (["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) {
     if (origin && !ALLOWED_ORIGINS.includes(origin)) {
       return NextResponse.json({ message: "CSRF blocked" }, { status: 403 });
@@ -25,7 +25,7 @@ export function middleware(req: NextRequest) {
 
   const res = NextResponse.next();
 
-  // ✅ CORS
+  // CORS
   if (origin && ALLOWED_ORIGINS.includes(origin)) {
     res.headers.set("Access-Control-Allow-Origin", origin);
     res.headers.set("Access-Control-Allow-Credentials", "true");
